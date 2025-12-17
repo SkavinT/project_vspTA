@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('transaksis', function (Blueprint $table) {
             $table->id();
+            $table->string('kode', 50)->unique();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->restrictOnDelete();
+            $table->decimal('total', 15, 2);
+            $table->string('status', 50);
             $table->timestamps();
         });
     }

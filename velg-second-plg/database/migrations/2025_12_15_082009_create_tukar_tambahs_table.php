@@ -11,9 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tukar_tambahs', function (Blueprint $table) {
+        // Model TukarTambah menggunakan table 'tukar_tambah'
+        Schema::create('tukar_tambah', function (Blueprint $table) {
             $table->id();
+            $table->string('customer_name', 255);
+            $table->string('phone', 50)->nullable();
+            $table->string('item_old', 255);
+            $table->string('item_new', 255);
+            $table->decimal('price', 15, 2)->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
+
+            // Index opsional bila sering dicari
+            $table->index(['customer_name']);
         });
     }
 
@@ -22,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tukar_tambahs');
+        Schema::dropIfExists('tukar_tambah');
     }
 };

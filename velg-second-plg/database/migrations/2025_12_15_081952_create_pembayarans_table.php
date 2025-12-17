@@ -13,7 +13,16 @@ return new class extends Migration
     {
         Schema::create('pembayarans', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('order_id');
+            $table->string('nama', 255);
+            $table->decimal('jumlah', 15, 2);
+            $table->string('metode', 100);
+            $table->date('tanggal');
+            $table->string('bukti')->nullable(); // path file bukti di storage
+            $table->enum('status', ['pending', 'terverifikasi', 'gagal'])->nullable();
+            $table->index(['order_id', 'tanggal']);
             $table->timestamps();
+
         });
     }
 

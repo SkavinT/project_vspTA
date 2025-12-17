@@ -13,7 +13,16 @@ return new class extends Migration
     {
         Schema::create('returs', function (Blueprint $table) {
             $table->id();
+            $table->string('nomor', 50)->unique();
+            $table->date('tanggal');
+            $table->foreignId('customer_id')->nullable()->constrained('pelanggans')->nullOnDelete();
+            $table->decimal('total', 15, 2);
+            $table->enum('status', ['pending', 'approved', 'rejected']);
+            $table->text('keterangan')->nullable();
+            $table->index(['tanggal', 'status']);
             $table->timestamps();
+
+            
         });
     }
 

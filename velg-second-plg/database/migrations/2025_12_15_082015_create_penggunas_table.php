@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('penggunas', function (Blueprint $table) {
             $table->id();
+            $table->string('nama', 255);
+            $table->string('email', 255)->unique();
+            $table->string('password'); // disimpan hasil hash
             $table->timestamps();
+
+            // Index tambahan jika sering dicari
+            $table->index('nama');
         });
     }
 

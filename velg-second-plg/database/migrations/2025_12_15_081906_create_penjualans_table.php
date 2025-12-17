@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('penjualans', function (Blueprint $table) {
             $table->id();
+            $table->date('tanggal');
+            $table->string('customer_name', 255);
+            $table->foreignId('product_id')->constrained('produks')->cascadeOnUpdate()->restrictOnDelete();
+            $table->unsignedInteger('quantity');
+            $table->decimal('price', 15, 2);
+            $table->decimal('total', 15, 2);
             $table->timestamps();
         });
     }

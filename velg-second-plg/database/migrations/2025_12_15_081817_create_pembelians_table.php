@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('pembelians', function (Blueprint $table) {
             $table->id();
+            $table->date('tanggal');
+            $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->nullOnDelete();
+            $table->decimal('total', 15, 2);
+            $table->string('keterangan', 1000)->nullable();
             $table->timestamps();
         });
     }
