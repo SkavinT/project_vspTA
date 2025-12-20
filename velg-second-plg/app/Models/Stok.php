@@ -13,6 +13,7 @@ class Stok extends Model
     // protected $table = 'stoks';
 
     protected $fillable = [
+        'produk_id',
         'nama',
         'kategori',
         'jumlah',
@@ -24,4 +25,9 @@ class Stok extends Model
         'jumlah' => 'integer',
         'harga' => 'decimal:2',
     ];
+
+    public function produk()
+    {
+        return $this->belongsTo(Produk::class);
+    }
 }

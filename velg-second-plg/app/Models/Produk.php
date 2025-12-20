@@ -23,4 +23,8 @@ class Produk extends Model
         'harga' => 'float',
         'stok' => 'integer',
     ];
+    public function stoks()
+    {
+        return $this->hasMany(Stok::class);
+    }
 }

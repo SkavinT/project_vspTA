@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('stoks', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('produk_id')->constrained('produks')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('nama', 255);
             $table->string('kategori', 100)->nullable();
             $table->unsignedInteger('jumlah');

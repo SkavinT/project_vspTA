@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Produk;
 use App\Models\Stok;
 use Illuminate\Http\Request;
 
@@ -21,7 +22,8 @@ class StokController extends Controller
      */
     public function create()
     {
-        return view('stok.create');
+        $produks = Produk::orderBy('nama')->pluck('nama', 'id');
+        return view('stok.create', compact('produks'));
     }
 
     /**
@@ -64,13 +66,13 @@ class StokController extends Controller
     public function update(Request $request, Stok $stok)
     {
         $data = $request->validate([
+            'produk_id' => 'required|exists:produks,id',
             'nama' => 'required|string|max:255',
             'kategori' => 'nullable|string|max:100',
             'jumlah' => 'required|integer|min:0',
             'harga' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
-
         $stok->update($data);
 
         return redirect()->route('stok.index')->with('success', 'Stok berhasil diperbarui.');
