@@ -8,14 +8,11 @@
 </head>
 <body class="min-h-full bg-gray-50 text-gray-900">
     <header class="border-b bg-white">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
-            <a href="{{ route('home') }}" class="flex items-center gap-3 shrink-0">
-                <svg class="w-8 h-8 text-slate-900" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="12" cy="12" r="10"/>
-                </svg>
-                <span class="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight whitespace-nowrap leading-none shrink-0 w-max text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-indigo-700 to-sky-600">
-                    VELGSECONDPLG
-                </span>
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-2 sm:gap-3">
+            <a href="{{ route('home') }}" class="flex items-center gap-2 sm:gap-3 shrink-0" aria-label="Beranda">
+                <img src="{{ asset('images/vsplogo.jpg') }}" alt="Logo VELGSECONDPLG"
+                     style="width:160px;height:70px"
+                     class="object-contain shrink-0 align-middle">
             </a>
 
             <form action="{{ route('produk.index') }}" method="get" class="flex-1 hidden md:flex">
@@ -28,10 +25,10 @@
                 </div>
             </form>
 
-            <div class="ml-auto flex items-center gap-3">
+            <div class="ml-auto w-full flex items-center gap-3 justify-end">
                 <a href="{{ route('login') }}" class="text-sm hover:text-indigo-600">Masuk</a>
                 <a href="{{ route('register') }}" class="text-sm hover:text-indigo-600">Daftar</a>
-            </div>
+        </div>
 
             <button id="navToggle" class="md:hidden inline-flex items-center justify-center rounded-md border p-2">
                 <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
