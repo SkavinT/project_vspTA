@@ -13,8 +13,13 @@ class StokController extends Controller
      */
     public function index()
     {
-        $stoks = Stok::latest()->paginate(15);
-        return view('stok.index', compact('stoks'));
+        $q = request('q');
+        $produks = Produk::query()
+            ->when($q, fn($qry) => $qry->where('nama', 'like', "%{$q}%"))
+            ->orderBy('nama')
+            ->paginate(15);
+
+        return view('stok.index', compact('produks'));
     }
 
     /**
@@ -32,6 +37,7 @@ class StokController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'produk_id' => 'required|exists:produks,id',
             'nama' => 'required|string|max:255',
             'kategori' => 'nullable|string|max:100',
             'jumlah' => 'required|integer|min:0',
@@ -39,9 +45,15 @@ class StokController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
+        // Catat transaksi stok
         Stok::create($data);
 
-        return redirect()->route('stok.index')->with('success', 'Stok berhasil ditambahkan.');
+        // Tambahkan stok ke produk terkait
+        $produk = Produk::findOrFail($data['produk_id']);
+        $produk->stok = (int)$produk->stok + (int)$data['jumlah'];
+        $produk->save();
+
+        return redirect()->route('stok.index')->with('success', 'Stok masuk dicatat dan stok produk diperbarui.');
     }
 
     /**

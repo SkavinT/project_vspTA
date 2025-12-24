@@ -12,7 +12,6 @@ class ReturController extends Controller
      */
     public function index(Request $request)
     {
-        // contoh: pencarian sederhana dan pagination
         $query = Retur::query();
 
         if ($request->filled('q')) {
@@ -23,7 +22,8 @@ class ReturController extends Controller
 
         $returs = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
-        return view('returs.index', compact('returs'));
+        // FIX: singular folder/view name
+        return view('retur.index', compact('returs'));
     }
 
     /**
@@ -31,7 +31,8 @@ class ReturController extends Controller
      */
     public function create()
     {
-        return view('returs.create');
+        // FIX: view name if you ever enable create
+        return view('retur.create');
     }
 
     /**
@@ -51,7 +52,8 @@ class ReturController extends Controller
 
         Retur::create($data);
 
-        return redirect()->route('returs.index')->with('success', 'Retur berhasil dibuat.');
+        // FIX: route name to singular
+        return redirect()->route('retur.index')->with('success', 'Retur berhasil dibuat.');
     }
 
     /**
@@ -59,7 +61,7 @@ class ReturController extends Controller
      */
     public function show(Retur $retur)
     {
-        return view('returs.show', compact('retur'));
+        return view('retur.show', compact('retur'));
     }
 
     /**
@@ -67,7 +69,7 @@ class ReturController extends Controller
      */
     public function edit(Retur $retur)
     {
-        return view('returs.edit', compact('retur'));
+        return view('retur.edit', compact('retur'));
     }
 
     /**
@@ -86,7 +88,7 @@ class ReturController extends Controller
 
         $retur->update($data);
 
-        return redirect()->route('returs.index')->with('success', 'Retur berhasil diperbarui.');
+        return redirect()->route('retur.index')->with('success', 'Retur berhasil diperbarui.');
     }
 
     /**
@@ -95,7 +97,6 @@ class ReturController extends Controller
     public function destroy(Retur $retur)
     {
         $retur->delete();
-
-        return redirect()->route('returs.index')->with('success', 'Retur berhasil dihapus.');
+        return redirect()->route('retur.index')->with('success', 'Retur berhasil dihapus.');
     }
 }

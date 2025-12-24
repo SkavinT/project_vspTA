@@ -19,8 +19,8 @@ use Illuminate\Support\Facades\Route;
 // Halaman utama
 Route::get('/', [ProdukController::class, 'index'])->name('home');
 
-// Produk (index, show, create, store)
-Route::resource('produk', ProdukController::class)->only(['index','show','create','store']);
+// Produk (index, show, create, store, edit, update)
+Route::resource('produk', ProdukController::class)->only(['index','show','create','store','edit','update']);
 Route::delete('produk/{produk}', [ProdukController::class, 'destroy'])->name('produk.destroy');
 
 Route::resource('penjualan', PenjualanController::class)->only(['index','show']);
@@ -28,7 +28,7 @@ Route::resource('pembelian', PembelianController::class)->only(['index','show'])
 Route::resource('transaksi', TransaksiController::class)->only(['index','show']);
 Route::resource('laporan-transaksi', LaporanTransaksiController::class)->only(['index','show']);
 Route::resource('pembayaran', PembayaranController::class)->only(['index','show']);
-Route::resource('stok', StokController::class)->only(['index','show','create','store']);;
+Route::resource('stok', StokController::class)->only(['index','show']);
 Route::resource('retur', ReturController::class)->only(['index','show']);
 Route::resource('tukar-tambah', TukarTambahController::class)->only(['index','show']);
 Route::resource('pelanggan', PelangganController::class)->only(['index','show']);

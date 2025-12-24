@@ -15,7 +15,7 @@
             <select name="produk_id" class="mt-1 w-full rounded-md border-gray-300" required>
                 <option value="" disabled selected>Pilih produk</option>
                 @foreach($produks as $id => $nama)
-                    <option value="{{ $id }}" @selected(old('produk_id') == $id)>{{ $nama }}</option>
+                    <option value="{{ $id }}" @selected(old('produk_id', request('produk_id')) == $id)>{{ $nama }}</option>
                 @endforeach
             </select>
             @error('produk_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror

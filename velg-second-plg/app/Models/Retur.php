@@ -28,6 +28,7 @@ class Retur extends Model
 
     public function pelanggan()
     {
-        return $this->belongsTo(Pelanggan::class);
+        // FIX: the FK is 'customer_id' in your migration
+        return $this->belongsTo(\App\Models\Pelanggan::class, 'customer_id');
     }
 }
