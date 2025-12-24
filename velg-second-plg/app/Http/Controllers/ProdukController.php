@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Produk;
 use Illuminate\Http\Request;
+use App\Models\Produk;
 use Illuminate\Support\Facades\Storage;
 
 class ProdukController extends Controller
@@ -13,7 +13,7 @@ class ProdukController extends Controller
      */
     public function index()
     {
-        $produks = Produk::latest()->paginate(10);
+        $produks = Produk::latest()->paginate(12);
         return view('produk.index', compact('produks'));
     }
 
@@ -30,21 +30,27 @@ class ProdukController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama' => 'required|string|max:255',
-            'harga' => 'required|numeric',
-            'stok' => 'required|integer',
+        $data = $request->validate([
+            'nama' => 'required|string|max:200',
+            'harga' => 'required|numeric|min:0',
+            'stok' => 'nullable|integer|min:0',
             'deskripsi' => 'nullable|string',
-            'gambar' => 'nullable|image|max:2048',
+            'foto' => 'nullable|image|max:2048',
         ]);
 
-        if ($request->hasFile('gambar')) {
-            $validated['gambar'] = $request->file('gambar')->store('produk', 'public');
-        }
+        $path = $request->hasFile('foto')
+            ? $request->file('foto')->store('produk', 'public')
+            : null;
 
-        Produk::create($validated);
+        $produk = new Produk();
+        $produk->nama = $data['nama'];
+        $produk->harga = $data['harga'];
+        $produk->stok = $data['stok'] ?? 0;
+        $produk->deskripsi = $data['deskripsi'] ?? null;
+        $produk->gambar = $path; // simpan ke kolom 'gambar'
+        $produk->save();
 
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil dibuat.');
+        return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan');
     }
 
     /**
@@ -73,15 +79,21 @@ class ProdukController extends Controller
             'harga' => 'required|numeric',
             'stok' => 'required|integer',
             'deskripsi' => 'nullable|string',
-            'gambar' => 'nullable|image|max:2048',
+            'foto' => 'nullable|image|max:2048',
         ]);
 
-        if ($request->hasFile('gambar')) {
+        if ($request->hasFile('foto')) {
             // delete old image if exists
-            if ($produk->gambar && Storage::disk('public')->exists($produk->gambar)) {
-                Storage::disk('public')->delete($produk->gambar);
+            if (!empty($produk->foto)) {
+                $oldPath = str_starts_with($produk->foto, 'storage/')
+                    ? substr($produk->foto, strlen('storage/'))
+                    : $produk->foto;
+
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
-            $validated['gambar'] = $request->file('gambar')->store('produk', 'public');
+            $validated['foto'] = $request->file('foto')->store('produk', 'public');
         }
 
         $produk->update($validated);
@@ -94,8 +106,14 @@ class ProdukController extends Controller
      */
     public function destroy(Produk $produk)
     {
-        if ($produk->gambar && Storage::disk('public')->exists($produk->gambar)) {
-            Storage::disk('public')->delete($produk->gambar);
+        if (!empty($produk->gambar)) {
+            $oldPath = str_starts_with($produk->gambar, 'storage/')
+                ? substr($produk->gambar, strlen('storage/'))
+                : $produk->gambar;
+
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($oldPath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
+            }
         }
 
         $produk->delete();

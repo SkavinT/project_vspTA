@@ -11,9 +11,11 @@
                     : null;
             @endphp
             @if($img)
-                <img src="{{ $img }}" alt="{{ $produk->nama }}" class="w-full object-cover">
+                <img src="{{ $img }}" alt="{{ $produk->nama }}"
+                     style="width:600px;height:420px;object-fit:cover;object-position:center"
+                     class="mx-auto">
             @else
-                <div class="h-80 flex items-center justify-center text-gray-400">Tidak ada gambar</div>
+                <div style="height:320px" class="flex items-center justify-center text-gray-400">Tidak ada gambar</div>
             @endif
         </div>
 
@@ -35,7 +37,7 @@
                 <input id="qty" type="number" min="1" value="1"
                        class="w-20 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
                 <button type="button"
-                        class="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
+                        class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     Tambah ke Keranjang
                 </button>
             </div>
@@ -47,4 +49,14 @@
             </div>
         </div>
     </div>
+
+    <form action="{{ route('produk.destroy', $produk) }}" method="post" class="mt-4"
+          onsubmit="return confirm('Yakin hapus produk ini?')">
+        @csrf
+        @method('DELETE')
+        <button type="submit"
+                class="inline-flex items-center rounded-md border border-red-300 bg-white text-red-600 px-4 py-2 text-sm font-semibold hover:bg-red-50 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500">
+            Hapus Produk
+        </button>
+    </form>
 @endsection

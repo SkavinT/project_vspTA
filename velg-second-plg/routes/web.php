@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\LaporanTransaksiController;
 use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\PembayaranController;
@@ -15,8 +16,13 @@ use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\TukarTambahController;
 use Illuminate\Support\Facades\Route;
 
+// Halaman utama
 Route::get('/', [ProdukController::class, 'index'])->name('home');
-Route::resource('produk', ProdukController::class)->only(['index','show']);
+
+// Produk (index, show, create, store)
+Route::resource('produk', ProdukController::class)->only(['index','show','create','store']);
+Route::delete('produk/{produk}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+
 Route::resource('penjualan', PenjualanController::class)->only(['index','show']);
 Route::resource('pembelian', PembelianController::class)->only(['index','show']);
 Route::resource('transaksi', TransaksiController::class)->only(['index','show']);
@@ -29,7 +35,12 @@ Route::resource('pelanggan', PelangganController::class)->only(['index','show'])
 Route::resource('suppliers', SupplierController::class)->only(['index','show']);
 Route::resource('penggunas', PenggunaController::class)->only(['index','show']);
 
-Route::get('/', [ProdukController::class, 'index'])->name('home');
+Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
