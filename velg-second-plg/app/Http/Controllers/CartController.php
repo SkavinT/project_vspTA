@@ -35,8 +35,8 @@ class CartController extends Controller
             $image = $p->gambar ?? $p->image ?? null;
             $cart[$p->id] = [
                 'id' => $p->id,
-                'name' => $p->nama ?? $p->name ?? 'Produk',
-                'price' => (int)($p->harga ?? $p->price ?? 0),
+                'name' => $p->nama ?? 'Produk',
+                'price' => (int)($p->harga ?? 0),
                 'image' => $image,
                 'qty' => $qty,
             ];

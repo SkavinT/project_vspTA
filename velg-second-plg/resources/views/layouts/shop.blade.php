@@ -34,7 +34,10 @@
                     </svg>
                     @php $cartCount = collect(session('cart', []))->sum('qty'); @endphp
                     @if($cartCount > 0)
-                        <span class="absolute -top-2 -right-2 min-w-[20px] h-[20px] rounded-full bg-slate-900 text-white text-xs font-semibold flex items-center justify-center px-1">
+                        <span
+                            class="pointer-events-none absolute top-0 right-0 translate-x-[75%] -translate-y-[75%] z-10
+                                   min-w-[20px] h-[20px] rounded-full bg-red-600 text-white text-[11px] font-bold
+                                   ring-2 ring-white flex items-center justify-center px-1 leading-none">
                             {{ $cartCount }}
                         </span>
                     @endif
