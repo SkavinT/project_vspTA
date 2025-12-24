@@ -9,17 +9,13 @@
             </div>
             <a href="{{ route('produk.create') }}"
                class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M12 5v14M5 12h14"/>
-                </svg>
+                <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
                 Tambah Produk
             </a>
         </div>
 
         @if($produks->count() === 0)
-            <div class="rounded-lg border bg-white p-8 text-center text-gray-600">
-                Belum ada produk.
-            </div>
+            <div class="rounded-lg border bg-white p-8 text-center text-gray-600">Belum ada produk.</div>
         @else
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
                  style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;">
@@ -33,20 +29,22 @@
                                         : asset('storage/'.$produk->gambar))
                                     : null;
                             @endphp
-
-                            @if($img)
-                                <img src="{{ $img }}"
-                                     alt="{{ $produk->nama ?? 'Produk' }}"
-                                     style="width:220px;height:220px;object-fit:cover;object-position:center;border-radius:8px;">
-                            @else
-                                <div class="text-gray-400 text-sm">Tidak ada gambar</div>
-                            @endif
+                            <a href="{{ route('produk.show', $produk) }}" class="block rounded overflow-hidden">
+                                @if($img)
+                                    <img src="{{ $img }}" alt="{{ $produk->nama }}"
+                                         style="width:220px;height:220px;object-fit:cover;object-position:center;border-radius:8px;">
+                                @else
+                                    <div class="text-gray-400 text-sm">Tidak ada gambar</div>
+                                @endif
+                            </a>
                         </div>
-                        <div class="p-3 flex-1 flex flex-col">
-                            <div class="font-medium">{{ $produk->nama ?? $produk->name ?? 'Produk' }}</div>
 
+                        <div class="p-3 flex-1 flex flex-col">
+                            <a href="{{ route('produk.show', $produk) }}" class="font-medium hover:text-indigo-600">
+                                {{ $produk->nama }}
+                            </a>
                             <div class="mt-1 text-slate-900 font-semibold">
-                                Rp {{ number_format($produk->harga ?? $produk->price ?? 0, 0, ',', '.') }}
+                                Rp {{ number_format($produk->harga, 0, ',', '.') }}
                             </div>
 
                             @if(!empty($produk->deskripsi))
@@ -54,10 +52,7 @@
                                     {{ \Illuminate\Support\Str::limit($produk->deskripsi, 100) }}
                                 </div>
                             @endif
-
-                            <div class="mt-1 text-xs text-gray-500">
-                                Stok: {{ $produk->stok ?? 0 }}
-                            </div>
+                            <div class="mt-1 text-xs text-gray-500">Stok: {{ (int)($produk->stok ?? 0) }}</div>
 
                             <div class="mt-3 grid grid-cols-2 gap-2">
                                 <form action="{{ route('cart.add') }}" method="post">
@@ -68,7 +63,6 @@
                                         Tambah ke Keranjang
                                     </button>
                                 </form>
-
                                 <form action="{{ route('produk.destroy', $produk) }}" method="post"
                                       onsubmit="return confirm('Yakin hapus produk ini?')">
                                     @csrf
@@ -85,7 +79,7 @@
             </div>
 
             <div class="mt-8">
-                {{ $produks->links() ?? '' }}
+                {{ $produks->links() }}
             </div>
         @endif
     </div>

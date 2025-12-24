@@ -32,11 +32,12 @@ class CartController extends Controller
         if (isset($cart[$p->id])) {
             $cart[$p->id]['qty'] += $qty;
         } else {
+            $image = $p->gambar ?? $p->image ?? null;
             $cart[$p->id] = [
                 'id' => $p->id,
                 'name' => $p->nama ?? $p->name ?? 'Produk',
                 'price' => (int)($p->harga ?? $p->price ?? 0),
-                'image' => $p->foto ?? $p->image ?? null,
+                'image' => $image,
                 'qty' => $qty,
             ];
         }
