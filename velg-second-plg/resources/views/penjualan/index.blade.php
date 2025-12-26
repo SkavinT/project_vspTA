@@ -8,8 +8,8 @@
         </div>
         @if(Route::has('penjualan.create'))
             <a href="{{ route('penjualan.create') }}"
-               class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
-                Tambah Penjualan
+               class="inline-flex items-center gap-1 rounded-md border border-indigo-300 bg-white px-4 py-2 text-sm font-medium text-indigo-600 shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                <span class="text-lg leading-none">+</span> Tambah Penjualan
             </a>
         @endif
     </div>

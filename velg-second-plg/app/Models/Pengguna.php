@@ -15,7 +15,7 @@ class Pengguna extends Model
         'nama',
         'email',
         'password',
-        // tambah kolom lain jika ada, mis: 'alamat', 'telepon'
+        'role',   // NEW
     ];
 
     protected $hidden = [

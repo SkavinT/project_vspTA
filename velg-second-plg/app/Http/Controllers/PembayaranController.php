@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class PembayaranController extends Controller
 {
@@ -38,12 +39,22 @@ class PembayaranController extends Controller
             'metode'   => 'required|string|max:100',
             'tanggal'  => 'required|date',
             'bukti'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'status'   => 'nullable|in:pending,terverifikasi,gagal',
+            'status'   => ['required', Rule::in([
+                'proses verifikasi',
+                'diverifikasi',
+                'dikemas',
+                'sedang dalam perjalanan',
+                'terkirim',
+                'dibatalkan',
+            ])],
         ]);
 
         if ($request->hasFile('bukti')) {
             $data['bukti'] = $request->file('bukti')->store('bukti_pembayaran', 'public');
         }
+
+        // optional safety default if somehow missing
+        $data['status'] = $data['status'] ?? 'pending';
 
         Pembayaran::create($data);
 
@@ -78,13 +89,18 @@ class PembayaranController extends Controller
             'metode'   => 'required|string|max:100',
             'tanggal'  => 'required|date',
             'bukti'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'status'   => 'nullable|in:pending,terverifikasi,gagal',
+            'status'   => ['required', Rule::in([
+                'proses verifikasi',
+                'diverifikasi',
+                'dikemas',
+                'sedang dalam perjalanan',
+                'terkirim',
+            ])],
         ]);
 
         if ($request->hasFile('bukti')) {
-            // hapus file lama jika ada
-            if ($pembayaran->bukti && Storage::disk('public')->exists($pembayaran->bukti)) {
-                Storage::disk('public')->delete($pembayaran->bukti);
+            if ($pembayaran->bukti && \Illuminate\Support\Facades\Storage::disk('public')->exists($pembayaran->bukti)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($pembayaran->bukti);
             }
             $data['bukti'] = $request->file('bukti')->store('bukti_pembayaran', 'public');
         }

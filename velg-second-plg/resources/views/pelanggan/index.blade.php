@@ -1,6 +1,7 @@
 @extends('layouts.shop')
 
 @section('content')
+<div class="max-w-7xl mx-auto px-4">
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-semibold">Data Pelanggan</h1>
@@ -8,8 +9,8 @@
         </div>
         @if(Route::has('pelanggan.create'))
             <a href="{{ route('pelanggan.create') }}"
-               class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
-                Tambah Pelanggan
+               class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                + Tambah Data Pelanggan
             </a>
         @endif
     </div>
@@ -42,11 +43,23 @@
                                 {{ optional($pelanggan->created_at)->format('d M Y H:i') }}
                             </td>
                             <td class="px-4 py-3 text-sm text-right">
-                                @if(Route::has('pelanggan.show'))
-                                    <a href="{{ route('pelanggan.show', $pelanggan) }}"
-                                       class="rounded-md border px-3 py-1.5 hover:bg-gray-100">
-                                        Detail
+                                @if(Route::has('pelanggan.edit'))
+                                    <a href="{{ route('pelanggan.edit', $pelanggan) }}"
+                                       class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400">
+                                        Edit
                                     </a>
+                                @endif
+
+                                @if(Route::has('pelanggan.destroy'))
+                                    <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="post" class="inline"
+                                          onsubmit="return confirm('Yakin hapus pelanggan ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="inline-flex items-center rounded-md border border-red-300 bg-white text-red-600 px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-red-50 hover:border-red-400 ml-2">
+                                            Hapus
+                                        </button>
+                                    </form>
                                 @endif
                             </td>
                         </tr>
@@ -59,4 +72,5 @@
             {{ $pelanggans->links() }}
         </div>
     @endif
+</div>
 @endsection

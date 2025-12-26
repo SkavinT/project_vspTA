@@ -21,12 +21,24 @@ class PelangganController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $loggedEmail = $request->user() ? ($request->user()->email ?? null) : null;
+
+        $rules = [
             'nama'    => 'required|string|max:255',
             'alamat'  => 'nullable|string|max:1000',
             'telepon' => 'nullable|string|max:30',
-            'email'   => 'nullable|email|unique:pelanggans,email',
-        ]);
+            // enforce email equals the logged-in user's email when available
+            'email'   => $loggedEmail
+                ? ['required','email','in:'.$loggedEmail,'unique:pelanggans,email']
+                : ['nullable','email','unique:pelanggans,email'],
+        ];
+
+        $data = $request->validate($rules);
+
+        // always use the logged-in user's email if present
+        if ($loggedEmail) {
+            $data['email'] = $loggedEmail;
+        }
 
         Pelanggan::create($data);
 

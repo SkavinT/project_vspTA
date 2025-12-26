@@ -26,25 +26,59 @@
             </form>
 
             <div class="ml-auto w-full flex items-center gap-3 justify-end">
-                <a href="{{ route('cart.index') }}" class="relative inline-flex items-center justify-center rounded-md border px-3 py-2" aria-label="Keranjang">
-                    <svg class="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-2-8H3"/>
-                        <circle cx="9" cy="19" r="1.8"/>
-                        <circle cx="17" cy="19" r="1.8"/>
-                    </svg>
-                    @php $cartCount = collect(session('cart', []))->sum('qty'); @endphp
-                    @if($cartCount > 0)
-                        <span
-                            class="pointer-events-none absolute top-0 right-0 translate-x-[75%] -translate-y-[75%] z-10
-                                   min-w-[20px] h-[20px] rounded-full bg-red-600 text-white text-[11px] font-bold
-                                   ring-2 ring-white flex items-center justify-center px-1 leading-none">
-                            {{ $cartCount }}
-                        </span>
-                    @endif
-                </a>
-                <a href="{{ route('login') }}" class="text-sm hover:text-indigo-600">Masuk</a>
-                <a href="{{ route('register') }}" class="text-sm hover:text-indigo-600">Daftar</a>
-        </div>
+                @auth
+                    <a href="{{ route('cart.index') }}" class="relative inline-flex items-center justify-center rounded-md border px-3 py-2" aria-label="Keranjang">
+                        <svg class="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-2-8H3"/>
+                            <circle cx="9" cy="19" r="1.8"/>
+                            <circle cx="17" cy="19" r="1.8"/>
+                        </svg>
+                        @php
+                            $cartKey = auth()->check() ? 'cart_user_'.auth()->id() : 'cart_guest';
+                            $cartCount = collect(session($cartKey, session('cart', [])))->sum('qty');
+                        @endphp
+                        @if($cartCount > 0)
+                            <span class="pointer-events-none absolute top-0 right-0 translate-x-[75%] -translate-y-[75%] z-10 min-w-[20px] h-[20px] rounded-full bg-red-600 text-white text-[11px] font-bold ring-2 ring-white flex items-center justify-center px-1 leading-none">
+                                {{ $cartCount }}
+                            </span>
+                        @endif
+                    </a>
+                @else
+                    <a href="{{ route('login', ['msg' => 'login-required', 'redirect' => route('cart.index')]) }}" class="relative inline-flex items-center justify-center rounded-md border px-3 py-2" aria-label="Keranjang">
+                        <svg class="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-2-8H3"/>
+                            <circle cx="9" cy="19" r="1.8"/>
+                            <circle cx="17" cy="19" r="1.8"/>
+                        </svg>
+                        @php
+                            $cartKey = auth()->check() ? 'cart_user_'.auth()->id() : 'cart_guest';
+                            $cartCount = collect(session($cartKey, session('cart', [])))->sum('qty');
+                        @endphp
+                        @if($cartCount > 0)
+                            <span class="pointer-events-none absolute top-0 right-0 translate-x-[75%] -translate-y-[75%] z-10 min-w-[20px] h-[20px] rounded-full bg-red-600 text-white text-[11px] font-bold ring-2 ring-white flex items-center justify-center px-1 leading-none">
+                                {{ $cartCount }}
+                            </span>
+                        @endif
+                    </a>
+                @endauth
+
+                @auth
+                    <a href="{{ route('profile.edit') }}"
+                       class="text-sm font-medium text-slate-900 hover:text-indigo-600">
+                        {{ auth()->user()->name ?? auth()->user()->email ?? 'Profil' }}
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit"
+                                class="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-100">
+                            Keluar
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="text-sm hover:text-indigo-600">Masuk</a>
+                    <a href="{{ route('register') }}" class="text-sm hover:text-indigo-600">Daftar</a>
+                @endauth
+            </div>
 
             <button id="navToggle" class="md:hidden inline-flex items-center justify-center rounded-md border p-2">
                 <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

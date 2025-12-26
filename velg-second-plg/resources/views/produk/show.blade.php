@@ -34,12 +34,26 @@
 
             <div class="mt-8 flex items-center gap-3">
                 <label for="qty" class="text-sm text-gray-700">Jumlah</label>
-                <input id="qty" type="number" min="1" value="1"
-                       class="w-20 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
-                <button type="button"
-                        class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    Tambah ke Keranjang
-                </button>
+
+                @auth
+                    <form action="{{ route('cart.add') }}" method="post" class="flex items-center gap-3">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $produk->id }}">
+                        <input id="qty" name="qty" type="number" min="1" value="1"
+                               class="w-20 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                        <button type="submit"
+                                class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            Tambah ke Keranjang
+                        </button>
+                    </form>
+                @else
+                    <input id="qty" type="number" min="1" value="1"
+                           class="w-20 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                    <a href="{{ route('login', ['msg' => 'login-required', 'redirect' => request()->fullUrl()]) }}"
+                       class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        Tambah ke Keranjang
+                    </a>
+                @endauth
             </div>
 
             <div class="mt-6">

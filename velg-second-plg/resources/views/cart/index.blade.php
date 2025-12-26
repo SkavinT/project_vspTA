@@ -2,8 +2,8 @@
 
 @section('content')
     @php
-        // Prefer controller-passed $cart; fallback to session
-        $rows = collect($cart ?? session('cart', []))->values();
+        $cartKey = auth()->check() ? 'cart_user_'.auth()->id() : 'cart_guest';
+        $rows = collect($cart ?? session($cartKey, session('cart', [])))->values();
         $ids = $rows->pluck('id')->filter()->unique()->values();
         $produkMap = \App\Models\Produk::whereIn('id', $ids)->get()->keyBy('id');
         $total = 0;
@@ -122,10 +122,10 @@
                        class="inline-flex items-center rounded-md border border-slate-300 bg-white text-slate-700 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400">
                         Belanja Lagi
                     </a>
-                    <button type="button"
-                            class="ml-auto inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        Checkout (placeholder)
-                    </button>
+                    <a href="{{ route('checkout.index') }}"
+                       class="ml-auto inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400">
+                        Checkout
+                    </a>
                 </div>
             </div>
         </div>

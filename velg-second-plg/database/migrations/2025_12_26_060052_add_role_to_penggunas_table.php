@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('stoks', function (Blueprint $table) {
-            $table->foreignId('produk_id')
-                ->after('id')
-                ->constrained('produks')
-                ->cascadeOnUpdate()
-                ->restrictOnDelete();
+        Schema::table('penggunas', function (Blueprint $table) {
+            $table->string('role', 50)->default('user')->after('password');
+            $table->index('role');
         });
     }
 
@@ -25,8 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('stoks', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('produk_id');
+        Schema::table('penggunas', function (Blueprint $table) {
+            $table->dropIndex(['role']);
+            $table->dropColumn('role');
         });
     }
 };

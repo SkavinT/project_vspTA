@@ -33,7 +33,7 @@ class PenjualanController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'customer_name' => 'required|string|max:255',
-            'product_id' => 'required|integer|exists:products,id',
+            'product_id' => 'required|integer|exists:produks,id',
             'quantity' => 'required|integer|min:1',
             'price' => 'required|numeric|min:0',
             'total' => 'required|numeric|min:0',
@@ -69,7 +69,7 @@ class PenjualanController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'customer_name' => 'required|string|max:255',
-            'product_id' => 'required|integer|exists:products,id',
+            'product_id' => 'required|integer|exists:produks,id',
             'quantity' => 'required|integer|min:1',
             'price' => 'required|numeric|min:0',
             'total' => 'required|numeric|min:0',

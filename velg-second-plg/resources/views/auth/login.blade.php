@@ -1,4 +1,10 @@
 <x-guest-layout>
+    @if(request('msg') === 'login-required')
+        <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-800">
+            Silakan login terlebih dahulu untuk menambahkan produk ke keranjang.
+        </div>
+    @endif
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
