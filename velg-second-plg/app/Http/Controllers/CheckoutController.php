@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\Pelanggan;
+use App\Models\Pembayaran;
+use App\Models\Transaksi;
 
 class CheckoutController extends Controller
 {
@@ -68,7 +70,7 @@ class CheckoutController extends Controller
             'catatan'      => 'nullable|string|max:500',
             'metode'       => 'required|in:cod,transfer,qris',
             'status'       => 'nullable|string',
-            'bukti'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'bukti'        => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:4096',
         ]);
 
         $cart = collect($this->getCart($request))->values();
@@ -84,9 +86,27 @@ class CheckoutController extends Controller
 
         $buktiPath = null;
         if ($request->hasFile('bukti')) {
-            $buktiPath = $request->file('bukti')->store('bukti', 'public');
+            $buktiPath = $request->file('bukti')->store('bukti_pembayaran', 'public');
         }
 
+        Pembayaran::create([
+            'order_id' => (int) preg_replace('/\D+/', '', $orderId), // numeric for your table
+            'nama'     => $data['nama'],
+            'jumlah'   => $total,
+            'metode'   => $data['metode'],
+            'tanggal'  => now()->toDateString(),
+            'bukti'    => $buktiPath,
+            'status'   => $data['status'] ?? 'proses verifikasi',
+        ]);
+
+        Transaksi::create([
+            'kode'    => $orderId,               // use full order code for uniqueness
+            'user_id' => $user?->id,
+            'total'   => $total,
+            'status'  => $data['status'] ?? 'proses verifikasi',
+        ]);
+
+        // Keep last_order for success page
         $request->session()->put('last_order', [
             'id'         => $orderId,
             'user_id'    => $user?->id,

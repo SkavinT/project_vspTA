@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaksi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TransaksiController extends Controller
 {
@@ -12,8 +13,9 @@ class TransaksiController extends Controller
      */
     public function index()
     {
-        // ubah paginate sesuai kebutuhan
-        $transaksis = Transaksi::latest()->paginate(10);
+        $transaksis = Transaksi::where('user_id', Auth::id())
+            ->latest()
+            ->paginate(10);
         return view('transaksi.index', compact('transaksis'));
     }
 

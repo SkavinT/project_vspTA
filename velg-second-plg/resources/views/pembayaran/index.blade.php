@@ -6,12 +6,6 @@
             <h1 class="text-2xl font-semibold">Data Pembayaran</h1>
             <p class="text-gray-600">Riwayat pembayaran pesanan.</p>
         </div>
-        @if(Route::has('pembayaran.create'))
-            <a href="{{ route('pembayaran.create') }}"
-               class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
-                Tambah Pembayaran
-            </a>
-        @endif
     </div>
 
     @if($pembayarans->count() === 0)

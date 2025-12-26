@@ -28,8 +28,7 @@ Route::resource('penjualan', PenjualanController::class)->only(['index','show','
 Route::resource('pembelian', PembelianController::class)->only(['index','show']);
 Route::resource('transaksi', TransaksiController::class)->only(['index','show']);
 Route::resource('laporan-transaksi', LaporanTransaksiController::class)->only(['index','show']);
-Route::resource('pembayaran', PembayaranController::class)
-    ->only(['index','show','create','store','edit','update','destroy']);
+Route::resource('pembayaran', PembayaranController::class)->only(['index','show']);
 Route::resource('stok', StokController::class)->only(['index','show']);
 Route::resource('retur', ReturController::class)->only(['index','show']);
 
