@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Penjualan extends Model
 {
     protected $fillable = [
+        'payment_id',
         'tanggal',
         'customer_name',
         'product_id',
@@ -16,6 +17,7 @@ class Penjualan extends Model
     ];
 
     protected $casts = [
+        'payment_id' => 'integer',
         'tanggal' => 'date',
         'product_id' => 'integer',
         'quantity' => 'integer',

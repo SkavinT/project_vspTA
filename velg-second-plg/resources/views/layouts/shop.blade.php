@@ -88,19 +88,35 @@
         </div>
 
         @php
+            $user       = auth()->user();
+            $role       = $user?->role;
+            $isAuth     = auth()->check();
+            $isAdmin    = $role === 'admin';
+            $isKaryawan = $role === 'karyawan';
+            $isSupplier = $role === 'supplier';
+
             $menu = [
-                ['label'=>'Produk','route'=>'produk.index','match'=>'produk.*'],
-                ['label'=>'Penjualan','route'=>'penjualan.index','match'=>'penjualan.*'],
-                ['label'=>'Pembelian','route'=>'pembelian.index','match'=>'pembelian.*'],
-                ['label'=>'Transaksi','route'=>'transaksi.index','match'=>'transaksi.*'],
-                ['label'=>'Pembayaran','route'=>'pembayaran.index','match'=>'pembayaran.*'],
-                ['label'=>'Stok','route'=>'stok.index','match'=>'stok.*'],
-                ['label'=>'Retur','route'=>'retur.index','match'=>'retur.*'],
-                ['label'=>'Tukar Tambah','route'=>'tukar-tambah.index','match'=>'tukar-tambah.*'],
-                ['label'=>'Pelanggan','route'=>'pelanggan.index','match'=>'pelanggan.*'],
-                ['label'=>'Supplier','route'=>'suppliers.index','match'=>'suppliers.*'],
-                ['label'=>'Pengguna','route'=>'penggunas.index','match'=>'penggunas.*'],
-                ['label'=>'Laporan Transaksi','route'=>'laporan-transaksi.index','match'=>'laporan-transaksi.*'],
+                // Publik / semua pengguna
+                ['label'=>'Produk','route'=>'produk.index','match'=>'produk.*','show'=>true],
+
+                // Operasional penjualan
+                ['label'=>'Penjualan','route'=>'penjualan.index','match'=>'penjualan.*','show'=>($isAdmin || $isKaryawan)],
+
+                // Pembelian & gudang
+                ['label'=>'Pembelian','route'=>'pembelian.index','match'=>'pembelian.*','show'=>$isAdmin],
+                ['label'=>'Stok','route'=>'stok.index','match'=>'stok.*','show'=>($isAdmin || $isKaryawan)],
+                ['label'=>'Retur','route'=>'retur.index','match'=>'retur.*','show'=>$isAdmin],
+                ['label'=>'Tukar Tambah','route'=>'tukar-tambah.index','match'=>'tukar-tambah.*','show'=>$isAdmin],
+
+                // Keuangan & transaksi
+                ['label'=>'Transaksi','route'=>'transaksi.index','match'=>'transaksi.*','show'=>$isAuth],
+                ['label'=>'Pembayaran','route'=>'pembayaran.index','match'=>'pembayaran.*','show'=>$isAuth], // admin/karyawan get more actions via routes
+
+                // Relasi dan admin
+                ['label'=>'Pelanggan','route'=>'pelanggan.index','match'=>'pelanggan.*','show'=>$isAuth],     // non-admin sees only own data
+                ['label'=>'Supplier','route'=>'suppliers.index','match'=>'suppliers.*','show'=>($isAdmin || $isSupplier)],
+                ['label'=>'Pengguna','route'=>'penggunas.index','match'=>'penggunas.*','show'=>$isAdmin],
+                ['label'=>'Laporan Transaksi','route'=>'laporan-transaksi.index','match'=>'laporan-transaksi.*','show'=>$isAdmin],
             ];
         @endphp
 
@@ -108,11 +124,13 @@
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div id="navBar" class="py-2 overflow-x-auto flex gap-3 md:gap-4">
                     @foreach($menu as $item)
-                        @php $active = request()->routeIs($item['match']); @endphp
-                        <a href="{{ route($item['route']) }}"
-                           class="shrink-0 rounded-md px-3 py-2 text-sm {{ $active ? 'bg-indigo-50 text-indigo-700 font-medium' : 'hover:bg-gray-100 text-gray-700' }}">
-                            {{ $item['label'] }}
-                        </a>
+                        @if($item['show'])
+                            @php $active = request()->routeIs($item['match']); @endphp
+                            <a href="{{ route($item['route']) }}"
+                               class="shrink-0 rounded-md px-3 py-2 text-sm {{ $active ? 'bg-indigo-50 text-indigo-700 font-medium' : 'hover:bg-gray-100 text-gray-700' }}">
+                                {{ $item['label'] }}
+                            </a>
+                        @endif
                     @endforeach
                 </div>
             </div>

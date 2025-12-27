@@ -61,6 +61,9 @@ class CheckoutController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
 
         $data = $request->validate([
             'nama'         => 'required|string|max:255',
@@ -89,24 +92,28 @@ class CheckoutController extends Controller
             $buktiPath = $request->file('bukti')->store('bukti_pembayaran', 'public');
         }
 
+        $orderNumericId = (int) preg_replace('/\D+/', '', $orderId);
+
         Pembayaran::create([
-            'order_id' => (int) preg_replace('/\D+/', '', $orderId), // numeric for your table
+            'order_id' => $orderNumericId,
             'nama'     => $data['nama'],
             'jumlah'   => $total,
             'metode'   => $data['metode'],
             'tanggal'  => now()->toDateString(),
             'bukti'    => $buktiPath,
             'status'   => $data['status'] ?? 'proses verifikasi',
+            'user_id'  => $user->id,
+            'items'    => $cart->toArray(), // persist items
         ]);
 
         Transaksi::create([
-            'kode'    => $orderId,               // use full order code for uniqueness
+            'kode'    => $orderId,              // use full order code (e.g., ORD-20251226-ABCDEF)
             'user_id' => $user?->id,
             'total'   => $total,
             'status'  => $data['status'] ?? 'proses verifikasi',
         ]);
 
-        // Keep last_order for success page
+        // keep for success page
         $request->session()->put('last_order', [
             'id'         => $orderId,
             'user_id'    => $user?->id,

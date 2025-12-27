@@ -24,7 +24,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Kode</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Pengguna</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">User ID</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Total</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Waktu</th>
@@ -38,21 +38,25 @@
                                 {{ $transaksi->kode }}
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-800">
-                                {{ optional($transaksi->user)->name ?? '—' }}
+                                {{ $transaksi->user_id ?? '—' }}
                             </td>
                             <td class="px-4 py-3 text-sm text-right font-semibold text-indigo-700">
                                 Rp {{ number_format($transaksi->total, 0, ',', '.') }}
                             </td>
                             <td class="px-4 py-3 text-sm">
-                                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs border
-                                    @if($transaksi->status === 'selesai' || $transaksi->status === 'paid')
-                                        bg-green-50 text-green-700 border-green-200
-                                    @elseif($transaksi->status === 'batal' || $transaksi->status === 'failed')
-                                        bg-red-50 text-red-700 border-red-200
-                                    @else
-                                        bg-yellow-50 text-yellow-700 border-yellow-200
-                                    @endif">
-                                    {{ $transaksi->status }}
+                                @php($icon = '•')
+                                <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border
+                                    @switch($transaksi->status)
+                                        @case('diverifikasi') bg-green-50 text-green-700 border-green-200 @php($icon = '✓') @break
+                                        @case('terkirim') bg-green-50 text-green-700 border-green-200 @php($icon = '✓') @break
+                                        @case('sedang dalam perjalanan') bg-sky-50 text-sky-700 border-sky-200 @php($icon = '🚚') @break
+                                        @case('dikemas') bg-indigo-50 text-indigo-700 border-indigo-200 @php($icon = '📦') @break
+                                        @case('proses verifikasi') bg-amber-50 text-amber-700 border-amber-200 @php($icon = '⏳') @break
+                                        @case('dibatalkan') bg-red-50 text-red-700 border-red-200 @php($icon = '✖') @break
+                                        @default bg-gray-50 text-gray-700 border-gray-200
+                                    @endswitch">
+                                    <span>{{ $icon }}</span>
+                                    <span>{{ $transaksi->status }}</span>
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-600">

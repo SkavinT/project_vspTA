@@ -17,11 +17,19 @@ class Pembayaran extends Model
         'tanggal',
         'bukti',
         'status',
+        'user_id',
+        'items',
     ];
 
     protected $casts = [
         'order_id' => 'integer',
         'jumlah'   => 'decimal:2',
         'tanggal'  => 'date',
+        'items'    => 'array',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class);
+    }
 }

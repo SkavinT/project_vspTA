@@ -42,7 +42,7 @@
                                 {{ $penjualan->customer_name }}
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-800">
-                                {{ optional($penjualan->produk)->nama ?? '—' }}
+                                {{ optional($penjualan->produk)->nama ?? ($penjualan->product_name ?? '—') }}
                             </td>
                             <td class="px-4 py-3 text-sm text-right text-gray-800">
                                 {{ number_format($penjualan->quantity, 0, ',', '.') }}

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pembayaran;
+use App\Models\Penjualan;
+use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class PembayaranController extends Controller
 {
@@ -48,13 +51,12 @@ class PembayaranController extends Controller
                 'dibatalkan',
             ])],
         ]);
+        $data['user_id'] = Auth::id(); // only show-own-data later
+        $data['status'] = $data['status'] ?? 'proses verifikasi';
 
         if ($request->hasFile('bukti')) {
             $data['bukti'] = $request->file('bukti')->store('bukti_pembayaran', 'public');
         }
-
-        // optional safety default if somehow missing
-        $data['status'] = $data['status'] ?? 'pending';
 
         Pembayaran::create($data);
 
@@ -83,31 +85,54 @@ class PembayaranController extends Controller
     public function update(Request $request, Pembayaran $pembayaran)
     {
         $data = $request->validate([
-            'order_id' => 'required|integer',
-            'nama'     => 'required|string|max:255',
-            'jumlah'   => 'required|numeric|min:0',
-            'metode'   => 'required|string|max:100',
-            'tanggal'  => 'required|date',
-            'bukti'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'status'   => ['required', Rule::in([
+            'status' => ['required', Rule::in([
                 'proses verifikasi',
                 'diverifikasi',
                 'dikemas',
                 'sedang dalam perjalanan',
                 'terkirim',
+                'dibatalkan',
             ])],
         ]);
 
-        if ($request->hasFile('bukti')) {
-            if ($pembayaran->bukti && \Illuminate\Support\Facades\Storage::disk('public')->exists($pembayaran->bukti)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($pembayaran->bukti);
+        $pembayaran->update(['status' => $data['status']]);
+
+        // Only generate sales when paid/verified
+        if (in_array($data['status'], ['diverifikasi','terkirim'], true) && is_array($pembayaran->items)) {
+            // Avoid duplicates: if any sales already linked to this payment, skip
+            $already = Penjualan::where('payment_id', $pembayaran->id)->exists();
+
+            if (!$already) {
+                foreach ($pembayaran->items as $it) {
+                    $productId = (int)($it['id'] ?? 0);
+                    $qty       = (int)($it['qty'] ?? 1);
+                    // Prefer current product price; fallback to item price
+                    $price     = (float)(Produk::find($productId)?->harga ?? ($it['price'] ?? 0));
+                    $total     = $qty * $price;
+
+                    Penjualan::create([
+                        'payment_id'    => $pembayaran->id,
+                        'tanggal'       => $pembayaran->tanggal ?? now()->toDateString(),
+                        'customer_name' => $pembayaran->nama,
+                        'product_id'    => $productId,
+                        'quantity'      => $qty,
+                        'price'         => $price,
+                        'total'         => $total,
+                    ]);
+                }
             }
-            $data['bukti'] = $request->file('bukti')->store('bukti_pembayaran', 'public');
         }
 
-        $pembayaran->update($data);
+        // Optional: also sync transaksi status as you already do elsewhere
+        $orderId = $pembayaran->order_id;
+        $userId  = $pembayaran->user_id;
+        $transaksi = \App\Models\Transaksi::where('user_id', $userId)
+            ->where('kode', 'like', 'ORD-' . $orderId . '%')->latest()->first();
+        if ($transaksi) {
+            $transaksi->update(['status' => $data['status']]);
+        }
 
-        return redirect()->route('pembayaran.index')->with('success', 'Pembayaran berhasil diperbarui.');
+        return redirect()->route('pembayaran.index')->with('success', 'Status pembayaran berhasil diperbarui.');
     }
 
     /**

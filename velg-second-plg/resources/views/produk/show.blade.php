@@ -64,13 +64,17 @@
         </div>
     </div>
 
-    <form action="{{ route('produk.destroy', $produk) }}" method="post" class="mt-4"
-          onsubmit="return confirm('Yakin hapus produk ini?')">
-        @csrf
-        @method('DELETE')
-        <button type="submit"
-                class="inline-flex items-center rounded-md border border-red-300 bg-white text-red-600 px-4 py-2 text-sm font-semibold hover:bg-red-50 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500">
-            Hapus Produk
-        </button>
-    </form>
+    @auth
+        @if(auth()->user()->role === 'admin')
+            <form action="{{ route('produk.destroy', $produk) }}" method="post" class="mt-4"
+                  onsubmit="return confirm('Yakin hapus produk ini?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                        class="inline-flex items-center rounded-md border border-red-300 bg-white text-red-600 px-4 py-2 text-sm font-semibold hover:bg-red-50 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Hapus Produk
+                </button>
+            </form>
+        @endif
+    @endauth
 @endsection

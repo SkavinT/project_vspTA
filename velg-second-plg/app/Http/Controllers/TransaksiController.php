@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaksi;
+use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,9 +14,36 @@ class TransaksiController extends Controller
      */
     public function index()
     {
-        $transaksis = Transaksi::where('user_id', Auth::id())
+        if (!\Illuminate\Support\Facades\Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $userId = \Illuminate\Support\Facades\Auth::id();
+
+        // Primary: use real Transaksi rows
+        $transaksis = \App\Models\Transaksi::where('user_id', $userId)
             ->latest()
             ->paginate(10);
+
+        // Fallback: if no transaksi yet, derive from Pembayaran for this user
+        if ($transaksis->count() === 0) {
+            $pays = \App\Models\Pembayaran::where('user_id', $userId)
+                ->orderByDesc('tanggal')
+                ->paginate(10);
+
+            $collection = $pays->getCollection()->map(function ($p) use ($userId) {
+                $t = new \stdClass();
+                $t->kode       = 'PAY-' . $p->order_id;            // display code
+                $t->user_id    = $userId;
+                $t->total      = $p->jumlah;
+                $t->status     = $p->status ?? 'proses verifikasi';
+                $t->created_at = \Carbon\Carbon::parse($p->tanggal);
+                return $t;
+            });
+            $pays->setCollection($collection);
+            $transaksis = $pays;
+        }
+
         return view('transaksi.index', compact('transaksis'));
     }
 

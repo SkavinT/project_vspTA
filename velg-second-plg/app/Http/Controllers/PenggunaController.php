@@ -6,6 +6,7 @@ use App\Models\Pengguna;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class PenggunaController extends Controller
 {
@@ -28,7 +29,11 @@ class PenggunaController extends Controller
             }
         }
 
-        $penggunas = Pengguna::orderBy('created_at', 'desc')->paginate(10);
+        $penggunas = \App\Models\Pengguna::leftJoin('users', 'users.email', '=', 'penggunas.email')
+            ->select('penggunas.*', 'users.role as user_role')
+            ->orderBy('penggunas.created_at', 'desc')
+            ->paginate(10);
+
         return view('pengguna.index', compact('penggunas')); // singular
     }
 
@@ -58,7 +63,7 @@ class PenggunaController extends Controller
 
         Pengguna::create($data);
 
-        return redirect()->route('pengguna.index')->with('success', 'Pengguna berhasil ditambahkan.');
+          return redirect()->route('pengguna.index')->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
     /**
@@ -74,7 +79,9 @@ class PenggunaController extends Controller
      */
     public function edit(Pengguna $pengguna)
     {
-        return view('pengguna.edit', compact('pengguna'));
+        $user = \App\Models\User::where('email', $pengguna->email)->first();
+        $currentRole = $user?->role ?? ($pengguna->role ?? 'guest');
+        return view('pengguna.edit', compact('pengguna', 'currentRole'));
     }
 
     /**
@@ -82,25 +89,31 @@ class PenggunaController extends Controller
      */
     public function update(Request $request, Pengguna $pengguna)
     {
-        $rules = [
+        $data = $request->validate([
             'nama'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:pengguna,email,' . $pengguna->id,
+            'email'    => ['required','email', Rule::unique('penggunas','email')->ignore($pengguna->id)],
             'password' => 'nullable|string|min:6|confirmed',
-            'role'     => 'nullable|in:guest,user,staff,admin', // allow null
-        ];
-
-        $data = $request->validate($rules);
+            'role'     => 'required|in:guest,user,staff,karyawan,admin',
+        ]);
 
         if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
         }
-        $data['role'] = $data['role'] ?? ($pengguna->role ?? 'guest');
 
-        $pengguna->update($data);
+        $pengguna->update([
+            'nama'  => $data['nama'],
+            'email' => $data['email'],
+            // keep local copy for fallback display
+            'role'  => $data['role'],
+        ]);
 
-        return redirect()->route('pengguna.index')->with('success', 'Pengguna berhasil diperbarui.');
+        // Sync role on users table by current (new) email
+        \App\Models\User::where('email', $pengguna->email)
+            ->update(['role' => $data['role']]);
+
+        return redirect()->route('penggunas.index')->with('success', 'Role pengguna berhasil diperbarui.');
     }
 
     /**

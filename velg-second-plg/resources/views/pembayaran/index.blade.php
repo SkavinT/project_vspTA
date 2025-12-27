@@ -46,25 +46,24 @@
                                 Rp {{ number_format($pembayaran->jumlah, 0, ',', '.') }}
                             </td>
                             <td class="px-4 py-3 text-sm">
-                                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs
+                                @php($icon = '•')
+                                <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold border
                                     @switch($pembayaran->status)
-                                        @case('diverifikasi') bg-green-50 text-green-700 border border-green-200 @break
-                                        @case('terkirim') bg-green-50 text-green-700 border border-green-200 @break
-                                        @case('sedang dalam perjalanan') bg-blue-50 text-blue-700 border border-blue-200 @break
-                                        @case('dikemas') bg-indigo-50 text-indigo-700 border border-indigo-200 @break
-                                        @case('proses verifikasi') bg-yellow-50 text-yellow-700 border border-yellow-200 @break
-                                        @case('dibatalkan') bg-red-50 text-red-700 border border-red-200 @break
-                                        @default bg-gray-50 text-gray-700 border border-gray-200
+                                        @case('diverifikasi') bg-green-50 text-green-700 border-green-200 @php($icon = '✓') @break
+                                        @case('terkirim') bg-green-50 text-green-700 border-green-200 @php($icon = '✓') @break
+                                        @case('sedang dalam perjalanan') bg-sky-50 text-sky-700 border-sky-200 @php($icon = '🚚') @break
+                                        @case('dikemas') bg-indigo-50 text-indigo-700 border-indigo-200 @php($icon = '📦') @break
+                                        @case('proses verifikasi') bg-amber-50 text-amber-700 border-amber-200 @php($icon = '⏳') @break
+                                        @case('dibatalkan') bg-red-50 text-red-700 border-red-200 @php($icon = '✖') @break
+                                        @default bg-gray-50 text-gray-700 border-gray-200
                                     @endswitch">
-                                    {{ $pembayaran->status }}
+                                    <span>{{ $icon }}</span>
+                                    <span>{{ $pembayaran->status }}</span>
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-sm">
-                                @php
-                                    $buktiUrl = $pembayaran->bukti ? asset('storage/'.$pembayaran->bukti) : null;
-                                @endphp
-                                @if($buktiUrl)
-                                    <a href="{{ $buktiUrl }}" target="_blank" class="text-indigo-600 hover:underline">Lihat</a>
+                                @if($pembayaran->bukti)
+                                    <a href="{{ asset('storage/'.$pembayaran->bukti) }}" target="_blank" class="text-indigo-600 hover:underline">Lihat</a>
                                 @else
                                     <span class="text-gray-400">—</span>
                                 @endif
@@ -75,6 +74,22 @@
                                        class="rounded-md border px-3 py-1.5 hover:bg-gray-100">
                                         Detail
                                     </a>
+                                @endif
+
+                                @if(auth()->user()?->role === 'admin')
+                                    <a href="{{ route('pembayaran.edit', $pembayaran) }}"
+                                       class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400">
+                                        Edit
+                                    </a>
+                                    <form action="{{ route('pembayaran.destroy', $pembayaran) }}" method="post" class="inline-block ml-2"
+                                          onsubmit="return confirm('Yakin hapus pembayaran ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="inline-flex items-center rounded-md border border-red-300 bg-white text-red-600 px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-red-50 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500">
+                                            Hapus
+                                        </button>
+                                    </form>
                                 @endif
                             </td>
                         </tr>
