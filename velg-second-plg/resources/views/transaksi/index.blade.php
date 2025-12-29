@@ -63,11 +63,12 @@
                                 {{ optional($transaksi->created_at)->format('d M Y H:i') }}
                             </td>
                             <td class="px-4 py-3 text-sm text-right">
-                                @if(Route::has('transaksi.show'))
+                                @php $isRealModel = $transaksi instanceof \App\Models\Transaksi; @endphp
+                                @if(Route::has('transaksi.show') && $isRealModel)
                                     <a href="{{ route('transaksi.show', $transaksi) }}"
-                                       class="rounded-md border px-3 py-1.5 hover:bg-gray-100">
-                                        Detail
-                                    </a>
+                                       class="rounded-md border px-3 py-1.5 hover:bg-gray-100">Detail</a>
+                                @else
+                                    <span class="text-gray-400">—</span>
                                 @endif
                             </td>
                         </tr>

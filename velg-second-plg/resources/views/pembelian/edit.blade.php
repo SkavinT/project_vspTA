@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-3xl mx-auto">
     <div class="mb-8 flex items-center justify-between">
-        <h1 class="text-2xl font-semibold">Tambah Pembelian</h1>
+        <h1 class="text-2xl font-semibold">Edit Pembelian</h1>
         <a href="{{ route('pembelian.index') }}" class="text-sm text-indigo-600 hover:underline">Kembali</a>
     </div>
 
@@ -13,19 +13,19 @@
         </div>
     @endif
 
-    <form action="{{ route('pembelian.store') }}" method="post" enctype="multipart/form-data" class="rounded-lg border bg-white p-6 space-y-5">
-        @csrf
+    <form action="{{ route('pembelian.update', $pembelian) }}" method="post" enctype="multipart/form-data" class="rounded-lg border bg-white p-6 space-y-5">
+        @csrf @method('PUT')
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Tanggal</label>
-                <input type="date" name="tanggal" value="{{ old('tanggal', now()->toDateString()) }}" class="mt-1 w-full rounded border px-3 py-2" required>
+                <input type="date" name="tanggal" value="{{ old('tanggal', $pembelian->tanggal?->format('Y-m-d')) }}" class="mt-1 w-full rounded border px-3 py-2" required>
             </div>
             <div>
                 <label class="block text-sm font-medium">Supplier</label>
                 <select name="supplier_id" class="mt-1 w-full rounded border px-3 py-2" required>
-                    <option value="" disabled {{ old('supplier_id') ? '' : 'selected' }}>Pilih supplier</option>
                     @foreach($suppliers as $s)
-                        <option value="{{ $s->id }}" @selected(old('supplier_id') == $s->id)>{{ $s->name }}</option>
+                        <option value="{{ $s->id }}" @selected(old('supplier_id', $pembelian->supplier_id) == $s->id)>{{ $s->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -35,37 +35,41 @@
             <div>
                 <label class="block text-sm font-medium">Produk</label>
                 <select name="product_id" class="mt-1 w-full rounded border px-3 py-2" required>
-                    <option value="" disabled {{ old('product_id') ? '' : 'selected' }}>Pilih produk</option>
                     @foreach($produks as $p)
-                        <option value="{{ $p->id }}" data-price="{{ $p->harga }}">{{ $p->nama }}</option>
+                        <option value="{{ $p->id }}" data-price="{{ $p->harga }}" @selected(old('product_id', $pembelian->product_id) == $p->id)>{{ $p->nama }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium">Harga Modal</label>
-                <input type="number" step="0.01" min="0" name="harga_modal" value="{{ old('harga_modal', 0) }}" class="mt-1 w-full rounded border px-3 py-2" required>
+                <input type="number" step="0.01" min="0" name="harga_modal" value="{{ old('harga_modal', $pembelian->harga_modal) }}" class="mt-1 w-full rounded border px-3 py-2" required>
             </div>
             <div>
                 <label class="block text-sm font-medium">Jumlah</label>
-                <input type="number" min="1" name="jumlah" value="{{ old('jumlah', 1) }}" class="mt-1 w-full rounded border px-3 py-2" required>
+                <input type="number" min="1" name="jumlah" value="{{ old('jumlah', $pembelian->jumlah) }}" class="mt-1 w-full rounded border px-3 py-2" required>
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Total</label>
-                <input type="number" step="0.01" min="0" name="total" value="{{ old('total', 0) }}" class="mt-1 w-full rounded border px-3 py-2" required>
+                <input type="number" step="0.01" min="0" name="total" value="{{ old('total', $pembelian->total) }}" class="mt-1 w-full rounded border px-3 py-2" required>
                 <p class="text-xs text-gray-500 mt-1">Otomatis dihitung dari Harga Modal × Jumlah (bisa disesuaikan).</p>
             </div>
             <div>
                 <label class="block text-sm font-medium">Gambar (opsional)</label>
                 <input type="file" name="gambar" accept="image/*" class="mt-1 block w-full">
+                @if($pembelian->gambar)
+                    <p class="mt-2 text-sm">Saat ini:
+                        <img src="{{ asset('storage/'.$pembelian->gambar) }}" alt="gambar" class="h-12 w-12 object-cover rounded inline-block">
+                    </p>
+                @endif
             </div>
         </div>
 
         <div>
             <label class="block text-sm font-medium">Keterangan</label>
-            <textarea name="keterangan" rows="3" class="mt-1 w-full rounded border px-3 py-2">{{ old('keterangan') }}</textarea>
+            <textarea name="keterangan" rows="3" class="mt-1 w-full rounded border px-3 py-2">{{ old('keterangan', $pembelian->keterangan) }}</textarea>
         </div>
 
         <div class="flex justify-end gap-3">

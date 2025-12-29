@@ -125,12 +125,10 @@ class PembayaranController extends Controller
 
         // Optional: also sync transaksi status as you already do elsewhere
         $orderId = $pembayaran->order_id;
-        $userId  = $pembayaran->user_id;
-        $transaksi = \App\Models\Transaksi::where('user_id', $userId)
-            ->where('kode', 'like', 'ORD-' . $orderId . '%')->latest()->first();
-        if ($transaksi) {
-            $transaksi->update(['status' => $data['status']]);
-        }
+
+        // Update all transaksi rows with matching order prefix (e.g., ORD-20251229-XXXXXX)
+        \App\Models\Transaksi::where('kode', 'like', 'ORD-' . $orderId . '-%')
+            ->update(['status' => $data['status']]);
 
         return redirect()->route('pembayaran.index')->with('success', 'Status pembayaran berhasil diperbarui.');
     }

@@ -1,74 +1,59 @@
 @extends('layouts.shop')
 
 @section('content')
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-semibold">Data Pembelian</h1>
-            <p class="text-gray-600">Riwayat pembelian dari supplier.</p>
-        </div>
-        @if(Route::has('pembelian.create'))
-            <a href="{{ route('pembelian.create') }}"
-               class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
-                Tambah Pembelian
-            </a>
-        @endif
+<div class="mb-6 flex items-center justify-between">
+    <div>
+        <h1 class="text-2xl font-semibold">Pembelian</h1>
+        <p class="text-gray-600">Daftar pembelian produk dari supplier.</p>
     </div>
-
-    <form method="get" class="mb-4">
-        <div class="flex gap-2">
-            <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari tanggal, supplier, keterangan..."
-                   class="w-full rounded-md border-gray-300 px-3 py-2 focus:border-indigo-500 focus:ring-indigo-500">
-            <button class="rounded-md border px-4 py-2 hover:bg-gray-100">Cari</button>
-        </div>
-    </form>
-
-    @if($pembelians->count() === 0)
-        <div class="rounded-lg border bg-white p-8 text-center text-gray-600">
-            Belum ada data pembelian.
-        </div>
-    @else
-        <div class="overflow-x-auto rounded-lg border bg-white">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Tanggal</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Supplier</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Keterangan</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Total</th>
-                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @foreach($pembelians as $pembelian)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 text-sm text-gray-800">
-                                {{ \Carbon\Carbon::parse($pembelian->tanggal)->format('d M Y') }}
-                            </td>
-                            <td class="px-4 py-3 text-sm text-gray-800">
-                                {{ optional($pembelian->supplier)->name ?? '—' }}
-                            </td>
-                            <td class="px-4 py-3 text-sm text-gray-700">
-                                {{ $pembelian->keterangan ?? '—' }}
-                            </td>
-                            <td class="px-4 py-3 text-sm text-right font-semibold text-indigo-700">
-                                Rp {{ number_format($pembelian->total, 0, ',', '.') }}
-                            </td>
-                            <td class="px-4 py-3 text-sm text-right">
-                                @if(Route::has('pembelian.show'))
-                                    <a href="{{ route('pembelian.show', $pembelian) }}"
-                                       class="rounded-md border px-3 py-1.5 hover:bg-gray-100">
-                                        Detail
-                                    </a>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <div class="mt-6">
-            {{ $pembelians->links() }}
-        </div>
+    @if(Route::has('pembelian.create') && auth()->user()?->role === 'admin')
+        <a href="{{ route('pembelian.create') }}"
+           class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400">
+           + Tambah
+        </a>
     @endif
+</div>
+
+@if($pembelians->isEmpty())
+    <div class="rounded-lg border bg-white p-6 text-center text-gray-600">Belum ada pembelian.</div>
+@else
+<div class="overflow-x-auto rounded-lg border bg-white">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Tanggal</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Supplier</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Produk</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Gambar</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Harga Modal</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Jumlah</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Total</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Keterangan</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            @foreach($pembelians as $pb)
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 text-sm">{{ $pb->tanggal?->format('d M Y') }}</td>
+                <td class="px-4 py-3 text-sm">{{ $pb->supplier?->name ?? '—' }}</td>
+                <td class="px-4 py-3 text-sm">{{ $pb->produk?->nama ?? '—' }}</td>
+                <td class="px-4 py-3">
+                    @if($pb->gambar)
+                        <img src="{{ asset('storage/'.$pb->gambar) }}" alt="gambar" class="h-12 w-12 object-cover rounded">
+                    @else
+                        <span class="text-gray-400 text-sm">—</span>
+                    @endif
+                </td>
+                <td class="px-4 py-3 text-sm text-right">Rp {{ number_format($pb->harga_modal,0,',','.') }}</td>
+                <td class="px-4 py-3 text-sm text-right">{{ $pb->jumlah }}</td>
+                <td class="px-4 py-3 text-sm text-right font-semibold text-indigo-700">Rp {{ number_format($pb->total,0,',','.') }}</td>
+                <td class="px-4 py-3 text-sm">{{ $pb->keterangan ?? '—' }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-6">{{ $pembelians->links() }}</div>
+@endif
 @endsection

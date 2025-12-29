@@ -21,12 +21,20 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [ProdukController::class, 'index'])->name('home');
 
 // Produk (index, show, create, store, edit, update)
-Route::resource('produk', ProdukController::class)->only(['index','show']);
+Route::resource('produk', ProdukController::class)
+    ->only(['index','show'])
+    ->whereNumber('produk');
 
 Route::middleware(['auth','role:admin'])->group(function () {
     // Admin-only: create, store, destroy
     Route::resource('produk', ProdukController::class)->only(['create','store']);
     Route::delete('produk/{produk}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+
+    Route::resource('suppliers', \App\Http\Controllers\SupplierController::class)
+        ->only(['create','store','edit','update','destroy']);
+
+    Route::resource('pembelian', \App\Http\Controllers\PembelianController::class)
+        ->only(['create','store','edit','update','destroy']);
 });
 
 Route::middleware(['auth','role:admin,karyawan'])->group(function () {
