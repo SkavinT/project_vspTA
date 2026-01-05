@@ -19,11 +19,13 @@ class Retur extends Model
         'total',
         'status',
         'keterangan',
+        'bukti_files',
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
-        'total'   => 'decimal:2',
+        'tanggal'      => 'date',
+        'total'        => 'decimal:2',
+        'bukti_files'  => 'array',
     ];
 
     public function pelanggan()

@@ -46,7 +46,10 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('penjualan', PenjualanController::class)->only(['index','show','create','store']);
     Route::resource('pembelian', PembelianController::class)->only(['index','show']);
     Route::resource('stok', StokController::class)->only(['index','show']);
-    Route::resource('retur', ReturController::class)->only(['index','show']);
+
+    // PERBAIKI:
+    Route::resource('retur', ReturController::class)->only(['index','show','create','store']);
+
     Route::resource('tukar-tambah', TukarTambahController::class)->only(['index','show']);
     Route::resource('suppliers', SupplierController::class)->only(['index','show']);
     Route::resource('penggunas', PenggunaController::class)
@@ -61,7 +64,7 @@ Route::resource('pembelian', PembelianController::class)->only(['index','show'])
 Route::resource('laporan-transaksi', LaporanTransaksiController::class)->only(['index','show']);
 Route::resource('pembayaran', PembayaranController::class)->only(['index','show']);
 Route::resource('stok', StokController::class)->only(['index','show']);
-Route::resource('retur', ReturController::class)->only(['index','show']);
+Route::resource('retur', ReturController::class)->only(['index','show','create','store']);
 
 Route::resource('tukar-tambah', TukarTambahController::class)->only(['index','show']);
 Route::resource('pelanggan', PelangganController::class)
@@ -89,6 +92,9 @@ Route::middleware(['auth','role:guest,admin,karyawan'])->group(function () {
     // Pelanggan (kelola alamat)
     Route::resource('pelanggan', PelangganController::class)
         ->only(['index','create','store','edit','update','destroy']);
+
+    Route::resource('tukar-tambah', TukarTambahController::class)
+        ->only(['index','show','create','store']);
 });
 
 // Supplier: lihat supplier (extend as needed)

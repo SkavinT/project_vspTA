@@ -8,8 +8,8 @@
         </div>
         @if(Route::has('tukar-tambah.create'))
             <a href="{{ route('tukar-tambah.create') }}"
-               class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
-                Tambah Tukar Tambah
+               class="inline-flex items-center gap-1 rounded-md border border-indigo-300 bg-white px-4 py-2 text-sm font-medium text-indigo-600 shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                <span class="text-lg leading-none">+</span> Tambah Tukar Tambah
             </a>
         @endif
     </div>
@@ -30,6 +30,7 @@
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Harga</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Catatan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Dibuat</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Foto Kondisi</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Aksi</th>
                     </tr>
                 </thead>
@@ -39,13 +40,26 @@
                             <td class="px-4 py-3 text-sm text-gray-900">{{ $tukar->customer_name }}</td>
                             <td class="px-4 py-3 text-sm text-gray-700">{{ $tukar->phone ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm text-gray-800">{{ $tukar->item_old }}</td>
-                            <td class="px-4 py-3 text-sm text-gray-800">{{ $tukar->item_new }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-800">
+                                {{ optional($tukar->produk)->nama ?? $tukar->item_new ?? '—' }}
+                            </td>
                             <td class="px-4 py-3 text-sm text-right font-semibold text-indigo-700">
                                 {{ $tukar->price !== null ? 'Rp '.number_format($tukar->price, 0, ',', '.') : '—' }}
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-700 line-clamp-1">{{ $tukar->notes ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm text-gray-600">
                                 {{ optional($tukar->created_at)->format('d M Y H:i') }}
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                @if($tukar->condition_image)
+                                    <a href="{{ asset('storage/'.$tukar->condition_image) }}" target="_blank">
+                                        <img src="{{ asset('storage/'.$tukar->condition_image) }}"
+                                             class="h-10 w-10 rounded object-cover border"
+                                             alt="Foto kondisi">
+                                    </a>
+                                @else
+                                    <span class="text-xs text-gray-400">Tidak ada</span>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-sm text-right">
                                 @if(Route::has('tukar-tambah.show'))

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Retur;
+use App\Models\Pelanggan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ReturController extends Controller
 {
@@ -16,13 +18,14 @@ class ReturController extends Controller
 
         if ($request->filled('q')) {
             $q = $request->q;
-            $query->where('nomor', 'like', "%{$q}%")
-                  ->orWhere('keterangan', 'like', "%{$q}%");
+            $query->where(function ($sub) use ($q) {
+                $sub->where('nomor', 'like', "%{$q}%")
+                    ->orWhere('keterangan', 'like', "%{$q}%");
+            });
         }
 
         $returs = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
 
-        // FIX: singular folder/view name
         return view('retur.index', compact('returs'));
     }
 
@@ -31,8 +34,8 @@ class ReturController extends Controller
      */
     public function create()
     {
-        // FIX: view name if you ever enable create
-        return view('retur.create');
+        $pelanggans = Pelanggan::orderBy('nama')->get(['id','nama']);
+        return view('retur.create', compact('pelanggans'));
     }
 
     /**
@@ -40,19 +43,28 @@ class ReturController extends Controller
      */
     public function store(Request $request)
     {
-        // sesuaikan rules dengan kolom nyata di table returs
         $data = $request->validate([
-            'nomor'       => 'required|string|max:50|unique:returs,nomor',
-            'tanggal'     => 'required|date',
-            'customer_id' => 'nullable|integer|exists:customers,id',
-            'total'       => 'required|numeric|min:0',
-            'status'      => 'required|in:pending,approved,rejected',
-            'keterangan'  => 'nullable|string',
+            'nomor'        => 'required|string|max:50|unique:returs,nomor',
+            'tanggal'      => 'required|date',
+            'customer_id'  => 'nullable|integer|exists:pelanggans,id',
+            'total'        => 'required|numeric|min:0',
+            'status'       => 'required|in:pending,approved,rejected',
+            'keterangan'   => 'nullable|string',
+            'bukti_files'  => 'nullable|array',
+            'bukti_files.*'=> 'file|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/x-matroska|max:51200',
         ]);
+
+        $paths = [];
+        if ($request->hasFile('bukti_files')) {
+            foreach ($request->file('bukti_files') as $file) {
+                $paths[] = $file->store('retur', 'public');
+            }
+        }
+
+        $data['bukti_files'] = $paths;
 
         Retur::create($data);
 
-        // FIX: route name to singular
         return redirect()->route('retur.index')->with('success', 'Retur berhasil dibuat.');
     }
 
@@ -78,13 +90,25 @@ class ReturController extends Controller
     public function update(Request $request, Retur $retur)
     {
         $data = $request->validate([
-            'nomor'       => 'required|string|max:50|unique:returs,nomor,' . $retur->id,
-            'tanggal'     => 'required|date',
-            'customer_id' => 'nullable|integer|exists:customers,id',
-            'total'       => 'required|numeric|min:0',
-            'status'      => 'required|in:pending,approved,rejected',
-            'keterangan'  => 'nullable|string',
+            'nomor'        => 'required|string|max:50|unique:returs,nomor,' . $retur->id,
+            'tanggal'      => 'required|date',
+            'customer_id'  => 'nullable|integer|exists:pelanggans,id',
+            'total'        => 'required|numeric|min:0',
+            'status'       => 'required|in:pending,approved,rejected',
+            'keterangan'   => 'nullable|string',
+            'bukti_files'  => 'nullable|array',
+            'bukti_files.*'=> 'file|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/x-matroska|max:51200',
         ]);
+
+        $paths = $retur->bukti_files ?? [];
+
+        if ($request->hasFile('bukti_files')) {
+            foreach ($request->file('bukti_files') as $file) {
+                $paths[] = $file->store('retur', 'public');
+            }
+        }
+
+        $data['bukti_files'] = $paths;
 
         $retur->update($data);
 

@@ -8,8 +8,8 @@
         </div>
         @if(Route::has('retur.create'))
             <a href="{{ route('retur.create') }}"
-               class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
-                Tambah Retur
+               class="inline-flex items-center gap-1 rounded-md border border-indigo-300 bg-white px-4 py-2 text-sm font-medium text-indigo-600 shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                <span class="text-lg leading-none">+</span> Tambah Retur
             </a>
         @endif
     </div>
@@ -37,6 +37,7 @@
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Total</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Keterangan</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Bukti</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Aksi</th>
                     </tr>
                 </thead>
@@ -69,6 +70,39 @@
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-700 line-clamp-1">
                                 {{ $retur->keterangan ?? '—' }}
+                            </td>
+
+                            <td class="px-4 py-3 text-sm">
+                                @php
+                                    $files = $retur->bukti_files ?? [];
+                                    $first = $files[0] ?? null;
+
+                                    $ext = $first ? strtolower(pathinfo($first, PATHINFO_EXTENSION)) : null;
+                                    $isVideo = in_array($ext, ['mp4','mov','avi','mkv','webm']);
+                                @endphp
+
+                                @if($first)
+                                    <div class="flex items-center gap-2">
+                                        @if(!$isVideo)
+                                            <a href="{{ asset('storage/'.$first) }}" target="_blank" class="inline-flex items-center gap-2">
+                                                <img src="{{ asset('storage/'.$first) }}"
+                                                     alt="Bukti Retur"
+                                                     class="h-10 w-10 rounded object-cover border">
+                                            </a>
+                                        @else
+                                            <a href="{{ asset('storage/'.$first) }}" target="_blank" class="inline-flex items-center gap-2">
+                                                <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 border text-xs">
+                                                    Video
+                                                </span>
+                                            </a>
+                                        @endif
+                                        <span class="text-xs text-gray-500">
+                                            {{ count($files) }} file
+                                        </span>
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 text-xs">Tidak ada</span>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-sm text-right">
                                 @if(Route::has('retur.show'))

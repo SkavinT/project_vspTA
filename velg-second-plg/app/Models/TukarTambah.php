@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use App\Models\Produk;
 
 class TukarTambah extends Model
 {
@@ -20,10 +22,23 @@ class TukarTambah extends Model
         'item_new',
         'price',
         'notes',
+        'user_id',
+        'produk_id',
+        'condition_image',
     ];
 
     // Casting untuk kolom tertentu
     protected $casts = [
         'price' => 'decimal:2',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function produk()
+    {
+        return $this->belongsTo(Produk::class, 'produk_id');
+    }
 }
