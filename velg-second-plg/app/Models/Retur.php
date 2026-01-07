@@ -16,6 +16,8 @@ class Retur extends Model
         'nomor',
         'tanggal',
         'customer_id',
+        'transaksi_id',
+        'transaksi_kode',
         'total',
         'status',
         'keterangan',
@@ -32,5 +34,10 @@ class Retur extends Model
     {
         // FIX: the FK is 'customer_id' in your migration
         return $this->belongsTo(\App\Models\Pelanggan::class, 'customer_id');
+    }
+
+    public function transaksi()
+    {
+        return $this->belongsTo(\App\Models\Transaksi::class, 'transaksi_id');
     }
 }

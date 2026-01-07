@@ -20,16 +20,37 @@
     @php
         $defaultNomor = old('nomor', 'RTN-' . now()->format('Ymd-His'));
         $today = old('tanggal', now()->toDateString());
+
+        $prefilledKode = old('transaksi_kode', $kode ?? ($transaksi->kode ?? null));
+        $prefilledTotal = old('total', $prefillTotal ?? 0);
+        $selectedTransaksiId = old('transaksi_id', $transaksi->id ?? null);
     @endphp
 
     <form action="{{ route('retur.store') }}" method="post" enctype="multipart/form-data" class="rounded-lg border bg-white p-6 space-y-5">
         @csrf
 
+        @if(isset($transaksi))
+            <input type="hidden" name="transaksi_id" value="{{ $transaksi->id }}">
+        @endif
+        @if($prefilledKode)
+            <input type="hidden" name="transaksi_kode" value="{{ $prefilledKode }}">
+        @endif
+
+        @if($prefilledKode)
+            <div>
+                <label class="block text-sm font-medium">Kode Transaksi</label>
+                <input type="text" value="{{ $prefilledKode }}" class="mt-1 w-full rounded border px-3 py-2 bg-gray-50" readonly>
+                <p class="text-xs text-gray-500 mt-1">Retur ini terkait dengan transaksi di atas.</p>
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Nomor Retur</label>
-                <input type="text" name="nomor" value="{{ $defaultNomor }}" class="mt-1 w-full rounded border px-3 py-2" required>
-                <p class="text-xs text-gray-500 mt-1">Otomatis terisi, boleh disesuaikan.</p>
+                <input type="text" name="nomor" value="{{ $defaultNomor }}"
+                       class="mt-1 w-full rounded border px-3 py-2 bg-gray-50"
+                       readonly>
+                <p class="text-xs text-gray-500 mt-1">Otomatis terisi dan tidak dapat diubah.</p>
             </div>
             <div>
                 <label class="block text-sm font-medium">Tanggal</label>
@@ -49,19 +70,35 @@
             </div>
             <div>
                 <label class="block text-sm font-medium">Status</label>
-                @php $st = old('status', 'pending'); @endphp
-                <select name="status" class="mt-1 w-full rounded border px-3 py-2" required>
-                    <option value="pending"  @selected($st === 'pending')>pending</option>
-                    <option value="approved" @selected($st === 'approved')>approved</option>
-                    <option value="rejected" @selected($st === 'rejected')>rejected</option>
-                </select>
+                @php
+                    $user = auth()->user();
+                    $isAdmin = $user && $user->role === 'admin';
+                    $st = old('status', 'pending');
+                @endphp
+
+                @if($isAdmin)
+                    <select name="status" class="mt-1 w-full rounded border px-3 py-2" required>
+                        <option value="pending"  @selected($st === 'pending')>pending</option>
+                        <option value="approved" @selected($st === 'approved')>approved</option>
+                        <option value="rejected" @selected($st === 'rejected')>rejected</option>
+                    </select>
+                @else
+                    <input type="hidden" name="status" value="pending">
+                    <input type="text" value="pending"
+                           class="mt-1 w-full rounded border px-3 py-2 bg-gray-50" readonly>
+                    <p class="text-xs text-gray-500 mt-1">
+                        Status awal selalu pending dan akan diubah oleh admin.
+                    </p>
+                @endif
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Total</label>
-                <input type="number" step="0.01" min="0" name="total" value="{{ old('total', 0) }}" class="mt-1 w-full rounded border px-3 py-2" required>
+                <input type="number" step="0.01" min="0" name="total"
+                       value="{{ $prefilledTotal }}"
+                       class="mt-1 w-full rounded border px-3 py-2" required>
             </div>
             <div>
                 <label class="block text-sm font-medium">Bukti (gambar / video, bisa lebih dari 1)</label>
@@ -80,6 +117,23 @@
             <label class="block text-sm font-medium">Keterangan</label>
             <textarea name="keterangan" rows="3" class="mt-1 w-full rounded border px-3 py-2">{{ old('keterangan') }}</textarea>
         </div>
+
+        @if(isset($transaksis) && $transaksis->count())
+            <div>
+                <label class="block text-sm font-medium">Pilih Kode Transaksi (opsional)</label>
+                <select name="transaksi_id" class="mt-1 w-full rounded border px-3 py-2">
+                    <option value="" {{ $selectedTransaksiId ? '' : 'selected' }}>— Tidak pilih —</option>
+                    @foreach($transaksis as $t)
+                        <option value="{{ $t->id }}" @selected($selectedTransaksiId == $t->id)>
+                            {{ $t->kode }} — Rp {{ number_format($t->total, 0, ',', '.') }}
+                        </option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                    Pilih kode transaksi yang mau diretur.
+                </p>
+            </div>
+        @endif
 
         <div class="flex justify-end gap-3">
             <a href="{{ route('retur.index') }}" class="rounded-md border px-4 py-2 text-sm hover:bg-gray-100">Batal</a>

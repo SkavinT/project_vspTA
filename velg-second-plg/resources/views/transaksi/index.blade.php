@@ -6,12 +6,20 @@
             <h1 class="text-2xl font-semibold">Daftar Transaksi</h1>
             <p class="text-gray-600">Ringkasan transaksi pengguna.</p>
         </div>
-        @if(Route::has('transaksi.create'))
-            <a href="{{ route('transaksi.create') }}"
-               class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
-                Tambah Transaksi
-            </a>
-        @endif
+        <div class="flex items-center gap-2">
+            @if(Route::has('retur.index'))
+                <a href="{{ route('retur.index') }}"
+                   class="inline-flex items-center rounded-md border border-indigo-300 bg-white px-4 py-2 text-sm font-medium text-indigo-600 shadow-sm hover:bg-indigo-50">
+                    Cek Pengajuan Retur
+                </a>
+            @endif
+            @if(Route::has('transaksi.create'))
+                <a href="{{ route('transaksi.create') }}"
+                   class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
+                    Tambah Transaksi
+                </a>
+            @endif
+        </div>
     </div>
 
     @if($transaksis->count() === 0)
@@ -63,13 +71,24 @@
                                 {{ optional($transaksi->created_at)->format('d M Y H:i') }}
                             </td>
                             <td class="px-4 py-3 text-sm text-right">
-                                @php $isRealModel = $transaksi instanceof \App\Models\Transaksi; @endphp
-                                @if(Route::has('transaksi.show') && $isRealModel)
-                                    <a href="{{ route('transaksi.show', $transaksi) }}"
-                                       class="rounded-md border px-3 py-1.5 hover:bg-gray-100">Detail</a>
-                                @else
-                                    <span class="text-gray-400">—</span>
-                                @endif
+                                <div class="inline-flex items-center gap-2">
+                                    @if(Route::has('transaksi.show') && $transaksi instanceof \App\Models\Transaksi)
+                                        <a href="{{ route('transaksi.show', $transaksi) }}"
+                                           class="rounded-md border px-3 py-1.5 hover:bg-gray-100">
+                                            Detail
+                                        </a>
+                                    @endif
+
+                                    @if(Route::has('retur.create'))
+                                        <a href="{{ route('retur.create', [
+                                                    'kode'  => $transaksi->kode,
+                                                    'total' => $transaksi->total,
+                                                ]) }}"
+                                           class="rounded-md border border-indigo-300 bg-white px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50">
+                                            Ajukan Retur
+                                        </a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @endforeach
