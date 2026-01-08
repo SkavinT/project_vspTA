@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Produk;
+use App\Models\Supplier;
 use Illuminate\Support\Facades\Storage;
 
 class ProdukController extends Controller
@@ -22,7 +23,10 @@ class ProdukController extends Controller
      */
     public function create()
     {
-        return view('produk.create');
+        $suppliers = Supplier::all();
+        $produks   = Produk::all();   // kalau tidak perlu, bisa dihapus dan sesuaikan view
+
+        return view('produk.create', compact('suppliers', 'produks'));
     }
 
     /**
