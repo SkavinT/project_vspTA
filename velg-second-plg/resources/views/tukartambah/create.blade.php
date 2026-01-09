@@ -26,9 +26,27 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Nama Pelanggan</label>
-                <input type="text" name="customer_name" value="{{ old('customer_name', auth()->user()->name ?? '') }}"
-                       class="mt-1 w-full rounded border px-3 py-2" required>
+                @php
+                    $user = auth()->user();
+                    $isAdmin = $user && $user->role === 'admin';
+                    $defaultName = old('customer_name', $user->name ?? '');
+                @endphp
+
+                @if($isAdmin)
+                    {{-- Admin boleh mengubah jika perlu --}}
+                    <input type="text" name="customer_name" value="{{ $defaultName }}"
+                           class="mt-1 w-full rounded border px-3 py-2" required>
+                @else
+                    {{-- Pelanggan: nama otomatis & tidak bisa diubah --}}
+                    <input type="hidden" name="customer_name" value="{{ $defaultName }}">
+                    <input type="text" value="{{ $defaultName }}"
+                           class="mt-1 w-full rounded border px-3 py-2 bg-gray-50" readonly>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Nama diambil dari akun yang sedang login.
+                    </p>
+                @endif
             </div>
+
             <div>
                 <label class="block text-sm font-medium">No. Telepon</label>
                 <input type="text" name="phone" value="{{ old('phone') }}"

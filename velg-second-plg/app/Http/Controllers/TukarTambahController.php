@@ -75,6 +75,11 @@ class TukarTambahController extends Controller
             'condition_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
+        // Pastikan nama pelanggan milik user login (non-admin)
+        if ($user->role !== 'admin') {
+            $data['customer_name'] = $user->name ?? $data['customer_name'];
+        }
+
         // simpan foto kondisi
         $path = $request->file('condition_image')->store('tukar-tambah', 'public');
         $data['condition_image'] = $path;
