@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use App\Models\Pelanggan;
 use App\Models\Pembayaran;
 use App\Models\Transaksi;
+use App\Models\Produk;
 
 class CheckoutController extends Controller
 {
@@ -93,6 +94,35 @@ class CheckoutController extends Controller
         }
 
         $orderNumericId = (int) preg_replace('/\D+/', '', $orderId);
+
+        // Cek stok semua produk di keranjang
+        foreach ($cart as $item) {
+            $produk = Produk::find($item['id'] ?? null);
+            $qty    = (int)($item['qty'] ?? 0);
+
+            if (!$produk || $qty <= 0) {
+                continue;
+            }
+
+            if ($produk->stok < $qty) {
+                return redirect()
+                    ->route('cart.index')
+                    ->withErrors([
+                        'stok' => 'Stok '.$produk->nama.' tidak mencukupi. Stok tersedia: '.$produk->stok,
+                    ])
+                    ->withInput();
+            }
+        }
+
+        // Jika stok cukup, kurangi stok per produk
+        foreach ($cart as $item) {
+            $produk = Produk::find($item['id'] ?? null);
+            $qty    = (int)($item['qty'] ?? 0);
+
+            if ($produk && $qty > 0) {
+                $produk->decrement('stok', $qty);
+            }
+        }
 
         Pembayaran::create([
             'order_id' => $orderNumericId,

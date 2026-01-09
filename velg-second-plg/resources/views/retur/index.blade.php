@@ -104,11 +104,18 @@
                                     <span class="text-gray-400 text-xs">Tidak ada</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-sm text-right">
+                            <td class="px-4 py-3 text-sm text-right space-x-2">
                                 @if(Route::has('retur.show'))
                                     <a href="{{ route('retur.show', $retur) }}"
                                        class="rounded-md border px-3 py-1.5 hover:bg-gray-100">
                                         Detail
+                                    </a>
+                                @endif
+
+                                @if(auth()->user()?->role === 'admin' && Route::has('retur.edit'))
+                                    <a href="{{ route('retur.edit', $retur) }}"
+                                       class="rounded-md border px-3 py-1.5 text-indigo-600 border-indigo-300 hover:bg-indigo-50">
+                                        Edit
                                     </a>
                                 @endif
                             </td>

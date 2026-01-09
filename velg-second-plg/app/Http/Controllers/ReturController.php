@@ -165,34 +165,24 @@ class ReturController extends Controller
     {
         $this->authorizeView($retur);
 
+        // Hanya izinkan status & keterangan
         $data = $request->validate([
-            'nomor'        => 'required|string|max:50|unique:returs,nomor,' . $retur->id,
-            'tanggal'      => 'required|date',
-            'customer_id'  => 'nullable|integer|exists:pelanggans,id',
-            'total'        => 'required|numeric|min:0',
-            'status'       => 'required|in:pending,approved,rejected',
-            'keterangan'   => 'nullable|string',
-            'bukti_files'  => 'nullable|array',
-            'bukti_files.*'=> 'file|mimetypes:image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/x-matroska|max:51200',
+            'status'     => 'required|in:pending,approved,rejected',
+            'keterangan' => 'nullable|string',
         ]);
 
         $user = Auth::user();
-        if ($user && $user->role !== 'admin') {
-            // pelanggan tidak boleh mengubah status
-            $data['status'] = $retur->status;
+        if (!$user || $user->role !== 'admin') {
+            // Safety: non-admin tidak boleh mengubah status sama sekali
+            unset($data['status']);
         }
 
-        $paths = $retur->bukti_files ?? [];
-
-        if ($request->hasFile('bukti_files')) {
-            foreach ($request->file('bukti_files') as $file) {
-                $paths[] = $file->store('retur', 'public');
-            }
+        // Update hanya dua field ini
+        if (array_key_exists('status', $data)) {
+            $retur->status = $data['status'];
         }
-
-        $data['bukti_files'] = $paths;
-
-        $retur->update($data);
+        $retur->keterangan = $data['keterangan'] ?? $retur->keterangan;
+        $retur->save();
 
         return redirect()->route('retur.index')->with('success', 'Retur berhasil diperbarui.');
     }

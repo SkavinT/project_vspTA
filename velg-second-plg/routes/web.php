@@ -51,7 +51,7 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('stok', StokController::class)->only(['index','show']);
 
     // PERBAIKI:
-    Route::resource('retur', ReturController::class)->only(['index','show','create','store']);
+    Route::resource('retur', ReturController::class)->only(['index','show','create','store','edit','update']);
     Route::resource('suppliers', SupplierController::class)->only(['index','show']);
     Route::resource('penggunas', PenggunaController::class)
         ->only(['index','show','edit','update']);
