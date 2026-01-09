@@ -78,6 +78,12 @@ class PembelianController extends Controller
             'keterangan'  => $data['keterangan'] ?? null,
         ]);
 
+        // Tambah stok produk
+        $produk = Produk::find($data['product_id']);
+        if ($produk) {
+            $produk->increment('stok', $jumlah);
+        }
+
         return redirect()->route('pembelian.index')->with('success', 'Pembelian berhasil dibuat.');
     }
 

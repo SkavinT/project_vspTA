@@ -95,6 +95,13 @@ class PenjualanController extends Controller
         $qty    = (int) $validated['quantity'];
         $total  = $qty * $price;
 
+        // Pastikan stok cukup
+        if ($produk->stok < $qty) {
+            return back()
+                ->withErrors(['quantity' => 'Stok produk tidak mencukupi. Stok tersedia: '.$produk->stok])
+                ->withInput();
+        }
+
         Penjualan::create([
             'tanggal'       => $validated['tanggal'],
             'customer_name' => $customerName,
@@ -103,6 +110,9 @@ class PenjualanController extends Controller
             'price'         => $price,
             'total'         => $total,
         ]);
+
+        // Kurangi stok produk
+        $produk->decrement('stok', $qty);
 
         return redirect()->route('penjualan.index')->with('success', 'Penjualan berhasil dibuat.');
     }

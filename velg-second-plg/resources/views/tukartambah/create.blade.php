@@ -66,16 +66,54 @@
                 <select name="produk_id" class="mt-1 w-full rounded border px-3 py-2" required>
                     <option value="">-- Pilih Produk --</option>
                     @foreach($produks as $produk)
-                        <option value="{{ $produk->id }}" @selected(old('produk_id') == $produk->id)>
+                        <option value="{{ $produk->id }}"
+                                data-price="{{ $produk->harga }}"
+                                @selected(old('produk_id') == $produk->id)>
                             {{ $produk->nama }} - Rp {{ number_format($produk->harga, 0, ',', '.') }}
                         </option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium">Perkiraan Harga Tukar Tambah (opsional)</label>
-                <input type="number" step="1" min="0" name="price" value="{{ old('price') }}"
-                       class="mt-1 w-full rounded border px-3 py-2">
+                <label class="block text-sm font-medium">Perkiraan Harga Tukar Tambah</label>
+                @php
+                    $user = auth()->user();
+                    $canSetPrice = $user && in_array($user->role, ['admin','karyawan']);
+                @endphp
+
+                @if($canSetPrice)
+                    <input type="number" step="1" min="0" name="price" value="{{ old('price') }}"
+                           class="mt-1 w-full rounded border px-3 py-2">
+                    <p class="mt-1 text-xs text-gray-500">
+                        Admin/karyawan dapat mengisi nilai tukar tambah di sini.
+                    </p>
+                @else
+                    {{-- Pelanggan: tidak bisa mengubah, hanya mengajukan --}}
+                    <input type="hidden" name="price" value="">
+                    <input type="text" value="Akan dinilai oleh admin"
+                           class="mt-1 w-full rounded border px-3 py-2 bg-gray-50" readonly>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Nilai tukar tambah akan ditentukan oleh admin/karyawan.
+                    </p>
+                @endif
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+            <div>
+                <label class="block text-sm font-medium">Harga Produk (otomatis)</label>
+                <input type="number" id="product_price" class="mt-1 w-full rounded border px-3 py-2 bg-gray-50"
+                       readonly>
+            </div>
+            <div>
+                <label class="block text-sm font-medium">Total Selisih yang Harus Dibayar</label>
+                <input type="number" id="total_diff" class="mt-1 w-full rounded border px-3 py-2 bg-gray-50"
+                       readonly>
+                {{-- jika ingin total ikut terkirim ke server --}}
+                <input type="hidden" name="total" id="total_hidden">
+                <p class="mt-1 text-xs text-gray-500">
+                    Total = Harga Produk - Perkiraan Harga Tukar Tambah.
+                </p>
             </div>
         </div>
 
@@ -106,6 +144,46 @@
                 Kirim Pengajuan
             </button>
         </div>
+
+        @php
+            $user = auth()->user();
+            $canSetStatus = $user && in_array($user->role, ['admin','karyawan']);
+        @endphp
+
+        @if($canSetStatus)
+            <input type="hidden" name="status" value="{{ old('status', 'sedang_negosiasi') }}">
+        @else
+            <input type="hidden" name="status" value="sedang_negosiasi">
+        @endif
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectProduk   = document.querySelector('select[name="produk_id"]');
+        const inputTrade     = document.querySelector('input[name="price"]');
+        const inputProdPrice = document.getElementById('product_price');
+        const inputTotalDiff = document.getElementById('total_diff');
+        const inputTotalHid  = document.getElementById('total_hidden');
+
+        function recalc() {
+            const option = selectProduk.options[selectProduk.selectedIndex] || {};
+            const hargaProduk = parseFloat(option.dataset.price || '0');
+            const tradeIn     = parseFloat(inputTrade.value || '0');
+            const selisih     = Math.max(hargaProduk - tradeIn, 0);
+
+            if (inputProdPrice) inputProdPrice.value = hargaProduk || '';
+            if (inputTotalDiff) inputTotalDiff.value = selisih || '';
+            if (inputTotalHid)  inputTotalHid.value  = selisih || '';
+        }
+
+        if (selectProduk) selectProduk.addEventListener('change', recalc);
+        if (inputTrade)   inputTrade.addEventListener('input', recalc);
+
+        // hitung awal kalau ada nilai lama
+        recalc();
+    });
+</script>
+@endpush

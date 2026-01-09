@@ -73,11 +73,22 @@ class TukarTambahController extends Controller
             'price'           => 'nullable|numeric',
             'notes'           => 'nullable|string',
             'condition_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'status'          => 'nullable|string|in:sedang_negosiasi,disetujui,ditolak',
         ]);
 
         // Pastikan nama pelanggan milik user login (non-admin)
         if ($user->role !== 'admin') {
             $data['customer_name'] = $user->name ?? $data['customer_name'];
+        }
+
+        // Default status:
+        // - pelanggan: selalu 'sedang_negosiasi'
+        // - admin/karyawan: boleh kirim dari form, kalau kosong tetap 'sedang_negosiasi'
+        $defaultStatus = 'sedang_negosiasi';
+        if (in_array($user->role, ['admin','karyawan'])) {
+            $data['status'] = $data['status'] ?? $defaultStatus;
+        } else {
+            $data['status'] = $defaultStatus;
         }
 
         // simpan foto kondisi
@@ -91,7 +102,21 @@ class TukarTambahController extends Controller
         // hubungkan ke user pemilik
         $data['user_id'] = $user->id;
 
-        TukarTambah::create($data);
+        // Jika langsung disetujui saat dibuat (admin/karyawan)
+        if (($data['status'] ?? 'sedang_negosiasi') === 'disetujui' && $produk) {
+            if ($produk->stok < 1) {
+                return back()
+                    ->withErrors(['status' => 'Stok produk tidak mencukupi untuk menyetujui tukar tambah ini.'])
+                    ->withInput();
+            }
+        }
+
+        $tukar = TukarTambah::create($data);
+
+        // Jika status disetujui, kurangi stok 1 unit
+        if (($tukar->status ?? 'sedang_negosiasi') === 'disetujui' && $produk) {
+            $produk->decrement('stok', 1);
+        }
 
         return redirect()->route('tukar-tambah.index')
                          ->with('success', 'Pengajuan tukar tambah berhasil dikirim.');
@@ -135,9 +160,26 @@ class TukarTambahController extends Controller
             'item_new'      => 'required|string|max:255',
             'price'         => 'nullable|numeric',
             'notes'         => 'nullable|string',
+            'status'        => 'required|string|in:sedang_negosiasi,disetujui,ditolak',
         ]);
 
+        $previousStatus = $tukarTambah->status ?? 'sedang_negosiasi';
+
         $tukarTambah->update($data);
+
+        $willBeApproved = $data['status'] === 'disetujui';
+        $wasApproved    = $previousStatus === 'disetujui';
+
+        // Hanya jika berubah dari bukan disetujui -> disetujui
+        if (!$wasApproved && $willBeApproved) {
+            $produk = $tukarTambah->produk;
+
+            if ($produk && $produk->stok < 1) {
+                return back()
+                    ->withErrors(['status' => 'Stok produk tidak mencukupi untuk menyetujui tukar tambah ini.'])
+                    ->withInput();
+            }
+        }
 
         return redirect()->route('tukar-tambah.index')
                          ->with('success', 'Data berhasil diperbarui.');

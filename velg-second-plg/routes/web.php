@@ -35,6 +35,9 @@ Route::middleware(['auth','role:admin'])->group(function () {
 
     Route::resource('pembelian', \App\Http\Controllers\PembelianController::class)
         ->only(['create','store','edit','update','destroy']);
+
+    Route::resource('tukar-tambah', TukarTambahController::class)
+        ->only(['index','show','edit','update']); // tambahkan edit,update
 });
 
 Route::middleware(['auth','role:admin,karyawan'])->group(function () {
@@ -49,8 +52,6 @@ Route::middleware(['auth','role:admin'])->group(function () {
 
     // PERBAIKI:
     Route::resource('retur', ReturController::class)->only(['index','show','create','store']);
-
-    Route::resource('tukar-tambah', TukarTambahController::class)->only(['index','show']);
     Route::resource('suppliers', SupplierController::class)->only(['index','show']);
     Route::resource('penggunas', PenggunaController::class)
         ->only(['index','show','edit','update']);
@@ -66,7 +67,6 @@ Route::resource('pembayaran', PembayaranController::class)->only(['index','show'
 Route::resource('stok', StokController::class)->only(['index','show']);
 Route::resource('retur', ReturController::class)->only(['index','show','create','store']);
 
-Route::resource('tukar-tambah', TukarTambahController::class)->only(['index','show']);
 Route::resource('pelanggan', PelangganController::class)
     ->only(['index','show','create','store','edit','update','destroy']);
 Route::resource('suppliers', SupplierController::class)->only(['index','show']);
@@ -86,13 +86,14 @@ Route::middleware(['auth','role:guest,admin,karyawan'])->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/sukses', [CheckoutController::class, 'success'])->name('checkout.success');
 
-    // Transaksi (own only; controller already filters by Auth::id())
+    // Transaksi (own only)
     Route::resource('transaksi', TransaksiController::class)->only(['index','show']);
 
     // Pelanggan (kelola alamat)
     Route::resource('pelanggan', PelangganController::class)
         ->only(['index','create','store','edit','update','destroy']);
 
+    // TUKAR TAMBAH – INI SATU-SATUNYA DEFINISI
     Route::resource('tukar-tambah', TukarTambahController::class)
         ->only(['index','show','create','store']);
 });

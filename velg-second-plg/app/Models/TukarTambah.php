@@ -25,6 +25,7 @@ class TukarTambah extends Model
         'user_id',
         'produk_id',
         'condition_image',
+        'status',          // <— tambah ini
     ];
 
     // Casting untuk kolom tertentu

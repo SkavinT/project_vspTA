@@ -6,12 +6,14 @@
             <h1 class="text-2xl font-semibold">Tukar Tambah</h1>
             <p class="text-gray-600">Daftar transaksi tukar tambah.</p>
         </div>
-        @if(Route::has('tukar-tambah.create'))
-            <a href="{{ route('tukar-tambah.create') }}"
-               class="inline-flex items-center gap-1 rounded-md border border-indigo-300 bg-white px-4 py-2 text-sm font-medium text-indigo-600 shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                <span class="text-lg leading-none">+</span> Tambah Tukar Tambah
-            </a>
-        @endif
+        @auth
+            @if(in_array(auth()->user()->role, ['guest','admin','karyawan']) && Route::has('tukar-tambah.create'))
+                <a href="{{ route('tukar-tambah.create') }}"
+                   class="inline-flex items-center gap-1 rounded-md border border-indigo-300 bg-white px-4 py-2 text-sm font-medium text-indigo-600 shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                    <span class="text-lg leading-none">+</span> Tambah Tukar Tambah
+                </a>
+            @endif
+        @endauth
     </div>
 
     @if($items->count() === 0)
@@ -31,6 +33,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Catatan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Dibuat</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Foto Kondisi</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Status</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Aksi</th>
                     </tr>
                 </thead>
@@ -52,14 +55,32 @@
                             </td>
                             <td class="px-4 py-3 text-sm">
                                 @if($tukar->condition_image)
-                                    <a href="{{ asset('storage/'.$tukar->condition_image) }}" target="_blank">
+                                    <a href="{{ asset('storage/'.$tukar->condition_image) }}" target="_blank"
+                                       class="inline-flex items-center">
                                         <img src="{{ asset('storage/'.$tukar->condition_image) }}"
-                                             class="h-10 w-10 rounded object-cover border"
+                                             class="h-8 w-8 rounded object-cover border"
                                              alt="Foto kondisi">
                                     </a>
                                 @else
                                     <span class="text-xs text-gray-400">Tidak ada</span>
                                 @endif
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                @php $status = $tukar->status ?? 'sedang_negosiasi'; @endphp
+                                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs border
+                                    @if($status === 'disetujui')
+                                        bg-green-50 text-green-700 border-green-200
+                                    @elseif($status === 'ditolak')
+                                        bg-red-50 text-red-700 border-red-200
+                                    @else
+                                        bg-yellow-50 text-yellow-700 border-yellow-200
+                                    @endif
+                                ">
+                                    @if($status === 'disetujui') Disetujui
+                                    @elseif($status === 'ditolak') Ditolak
+                                    @else Sedang negosiasi
+                                    @endif
+                                </span>
                             </td>
                             <td class="px-4 py-3 text-sm text-right">
                                 @if(Route::has('tukar-tambah.show'))
