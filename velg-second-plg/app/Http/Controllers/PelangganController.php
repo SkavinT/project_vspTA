@@ -13,13 +13,14 @@ class PelangganController extends Controller
     {
         $user = Auth::user();
 
-        if ($user && $user->role === 'admin') {
+        if ($user && in_array($user->role, ['admin','karyawan'])) {
+            // admin & karyawan: lihat semua pelanggan
             $pelanggans = Pelanggan::latest()->paginate(10);
         } elseif ($user) {
+            // role lain (guest, dll): hanya data miliknya (berdasarkan email)
             $pelanggans = Pelanggan::where('email', $user->email)
                 ->latest()->paginate(10);
         } else {
-            // No auth → no data
             $pelanggans = Pelanggan::whereRaw('1=0')->paginate(10);
         }
 
@@ -33,21 +34,30 @@ class PelangganController extends Controller
 
     public function store(Request $request)
     {
-        $user = Auth::user();
+        $user       = Auth::user();
         $loggedEmail = $user?->email;
+        $isStaff    = $user && in_array($user->role, ['admin','karyawan']);
 
         $rules = [
             'nama'    => 'required|string|max:255',
             'alamat'  => 'nullable|string|max:1000',
             'telepon' => 'nullable|string|max:30',
-            'email'   => $loggedEmail
-                ? ['required','email','in:'.$loggedEmail,'unique:pelanggans,email']
-                : ['nullable','email','unique:pelanggans,email'],
         ];
+
+        if ($isStaff) {
+            // admin & karyawan boleh isi email pelanggan apa saja
+            $rules['email'] = ['required','email','unique:pelanggans,email'];
+        } else {
+            // pelanggan biasa: email harus sama dengan email akunnya
+            $rules['email'] = $loggedEmail
+                ? ['required','email','in:'.$loggedEmail,'unique:pelanggans,email']
+                : ['nullable','email','unique:pelanggans,email'];
+        }
 
         $data = $request->validate($rules);
 
-        if ($loggedEmail) {
+        if (!$isStaff && $loggedEmail) {
+            // paksa email = email akun untuk non-staff
             $data['email'] = $loggedEmail;
         }
 
@@ -72,20 +82,19 @@ class PelangganController extends Controller
     {
         $this->authorizeView($pelanggan);
 
-        $user = Auth::user();
-        $isAdmin = $user && $user->role === 'admin';
+        $user       = Auth::user();
+        $canEditAll = $user && in_array($user->role, ['admin','karyawan']);
 
         $data = $request->validate([
             'nama'    => 'required|string|max:255',
             'alamat'  => 'nullable|string|max:1000',
             'telepon' => 'nullable|string|max:30',
-            'email'   => $isAdmin
+            'email'   => $canEditAll
                 ? ['nullable','email', Rule::unique('pelanggans','email')->ignore($pelanggan->id)]
                 : ['nullable','email','in:'.$user->email, Rule::unique('pelanggans','email')->ignore($pelanggan->id)],
         ]);
 
-        if (!$isAdmin) {
-            // Non-admin cannot change email away from their own
+        if (!$canEditAll) {
             $data['email'] = $user->email;
         }
 
@@ -104,10 +113,12 @@ class PelangganController extends Controller
     private function authorizeView(Pelanggan $pelanggan): void
     {
         $user = Auth::user();
-        if ($user && $user->role === 'admin') {
+        if ($user && in_array($user->role, ['admin','karyawan'])) {
+            // admin & karyawan boleh semua
             return;
         }
         if ($user && $pelanggan->email === $user->email) {
+            // pelanggan biasa hanya datanya sendiri
             return;
         }
         abort(403, 'Tidak diizinkan melihat data pelanggan orang lain.');

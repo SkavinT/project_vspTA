@@ -91,6 +91,19 @@
                                         </button>
                                     </form>
                                 @endif
+
+
+                                @if(auth()->user()?->role === 'admin')
+                                    <a href="{{ route('pembayaran.edit', $pembayaran) }}"
+                                       class="btn btn-sm">
+                                        Ubah Status
+                                    </a>
+                                @elseif(auth()->user()?->role === 'karyawan')
+                                    <a href="{{ route('pembayaran.karyawan.edit', $pembayaran) }}"
+                                       class="btn btn-sm">
+                                        Ubah Status
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

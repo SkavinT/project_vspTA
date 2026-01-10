@@ -15,26 +15,28 @@ class PenggunaController extends Controller
      */
     public function index()
     {
-        // Ensure the logged-in user exists in penggunas
-        if (Auth::check()) {
-            $u = Auth::user();
-            $existing = Pengguna::where('email', $u->email)->first();
-            if (!$existing) {
-                Pengguna::create([
+        // Sinkronkan semua user ke tabel penggunas (jika belum ada)
+        $users = \App\Models\User::all();
+
+        foreach ($users as $u) {
+            Pengguna::firstOrCreate(
+                ['email' => $u->email],
+                [
                     'nama'     => $u->name,
                     'email'    => $u->email,
+                    // pakai password yang sudah di-hash di users
                     'password' => $u->getAuthPassword(),
-                    'role'     => 'guest',
-                ]);
-            }
+                    'role'     => $u->role ?? 'guest',
+                ]
+            );
         }
 
-        $penggunas = \App\Models\Pengguna::leftJoin('users', 'users.email', '=', 'penggunas.email')
+        $penggunas = Pengguna::leftJoin('users', 'users.email', '=', 'penggunas.email')
             ->select('penggunas.*', 'users.role as user_role')
             ->orderBy('penggunas.created_at', 'desc')
             ->paginate(10);
 
-        return view('pengguna.index', compact('penggunas')); // singular
+        return view('pengguna.index', compact('penggunas'));
     }
 
     /**

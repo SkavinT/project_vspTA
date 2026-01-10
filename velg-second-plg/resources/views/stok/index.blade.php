@@ -45,13 +45,15 @@
                                 {{ \Illuminate\Support\Str::limit($p->deskripsi ?? '—', 80) }}
                             </td>
                             <td class="px-4 py-3 text-sm text-right whitespace-nowrap align-middle">
-                                <a href="{{ route('produk.edit', $p) }}"
-                                   class="inline-flex items-center gap-1.5 rounded-md border border-indigo-300 bg-white text-indigo-600 px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path d="M13.586 3.586a2 2 0 0 1 2.828 2.828l-8.486 8.486a2 2 0 0 1-.828.515l-3.086.88a.5.5 0 0 1-.62-.62l.88-3.086a2 2 0 0 1 .515-.828l8.486-8.486zM12 5l3 3"/>
-                                    </svg>
-                                    Edit
-                                </a>
+                                @if(auth()->user()?->role === 'admin')
+                                    <a href="{{ route('produk.edit', $p) }}"
+                                       class="inline-flex items-center gap-1.5 rounded-md border border-indigo-300 bg-white text-indigo-600 px-3 py-1.5 text-xs font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                        <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                            <path d="M13.586 3.586a2 2 0 0 1 2.828 2.828l-8.486 8.486a2 2 0 0 1-.828.515l-3.086.88a.5.5 0 0 1-.62-.62l.88-3.086a2 2 0 0 1 .515-.828l8.486-8.486zM12 5l3 3"/>
+                                        </svg>
+                                        Edit
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

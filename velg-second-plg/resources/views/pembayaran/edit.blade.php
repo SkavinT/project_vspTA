@@ -4,7 +4,15 @@
 <div class="max-w-3xl mx-auto">
     <h1 class="text-2xl font-semibold mb-6">Edit Pembayaran</h1>
 
-    <form action="{{ route('pembayaran.update', $pembayaran) }}" method="post" enctype="multipart/form-data"
+    @php
+        $user = auth()->user();
+        $isKaryawan = $user && $user->role === 'karyawan';
+    @endphp
+
+    <form action="{{ $isKaryawan
+        ? route('pembayaran.karyawan.update', $pembayaran)
+        : route('pembayaran.update', $pembayaran) }}"
+          method="post" enctype="multipart/form-data"
           class="rounded-lg border bg-white p-6 space-y-4">
         @csrf
         @method('PUT')

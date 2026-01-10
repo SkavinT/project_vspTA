@@ -76,6 +76,11 @@ class PembayaranController extends Controller
      */
     public function edit(Pembayaran $pembayaran)
     {
+        $user = Auth::user();
+        if (!$user || !in_array($user->role, ['admin', 'karyawan'], true)) {
+            abort(403, 'Anda tidak memiliki akses.');
+        }
+
         return view('pembayaran.edit', compact('pembayaran'));
     }
 
@@ -84,6 +89,11 @@ class PembayaranController extends Controller
      */
     public function update(Request $request, Pembayaran $pembayaran)
     {
+        $user = Auth::user();
+        if (!$user || !in_array($user->role, ['admin', 'karyawan'], true)) {
+            abort(403, 'Anda tidak memiliki akses.');
+        }
+
         $data = $request->validate([
             'status' => ['required', Rule::in([
                 'proses verifikasi',
