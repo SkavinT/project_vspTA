@@ -16,14 +16,17 @@ class RoleMiddleware
     {
         $user = $request->user();
         if (!$user) {
-            return redirect()->route('login');
+            abort(403);
         }
 
-        // Admin always allowed; otherwise must match one of the allowed roles
-        if ($user->role === 'admin' || in_array($user->role, $roles, true)) {
+        if ($user->role === 'admin') {
             return $next($request);
         }
 
-        abort(403, 'Anda tidak memiliki akses.');
+        if (in_array($user->role, $roles, true)) {
+            return $next($request);
+        }
+
+        abort(403);
     }
 }

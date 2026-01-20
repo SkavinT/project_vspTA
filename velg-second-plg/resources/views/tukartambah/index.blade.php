@@ -58,7 +58,7 @@
                                     <a href="{{ asset('storage/'.$tukar->condition_image) }}" target="_blank"
                                        class="inline-flex items-center">
                                         <img src="{{ asset('storage/'.$tukar->condition_image) }}"
-                                             class="h-8 w-8 rounded object-cover border"
+                                             class="h-16 w-24 object-cover rounded-md border border-gray-200"
                                              alt="Foto kondisi">
                                     </a>
                                 @else

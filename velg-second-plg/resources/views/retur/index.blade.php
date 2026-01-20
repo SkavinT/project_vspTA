@@ -87,7 +87,7 @@
                                             <a href="{{ asset('storage/'.$first) }}" target="_blank" class="inline-flex items-center gap-2">
                                                 <img src="{{ asset('storage/'.$first) }}"
                                                      alt="Bukti Retur"
-                                                     class="h-10 w-10 rounded object-cover border">
+                                                     class="h-16 w-24 object-cover rounded-md border border-gray-200">
                                             </a>
                                         @else
                                             <a href="{{ asset('storage/'.$first) }}" target="_blank" class="inline-flex items-center gap-2">

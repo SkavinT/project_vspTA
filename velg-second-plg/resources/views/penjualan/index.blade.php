@@ -56,7 +56,7 @@
                             <td class="px-4 py-3 text-sm text-right">
                                 @if(Route::has('penjualan.show'))
                                     <a href="{{ route('penjualan.show', $penjualan) }}"
-                                       class="rounded-md border px-3 py-1.5 hover:bg-gray-100">
+                                       class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                                         Detail
                                     </a>
                                 @endif

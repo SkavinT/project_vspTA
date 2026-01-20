@@ -16,7 +16,7 @@ class Transaksi extends Model
         'user_id',
         'total',
         'status',
-        // tambahkan field lain jika ada
+        'alamat',
     ];
 
     protected $casts = [

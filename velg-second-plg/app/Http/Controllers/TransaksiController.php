@@ -14,32 +14,45 @@ class TransaksiController extends Controller
      */
     public function index()
     {
-        if (!\Illuminate\Support\Facades\Auth::check()) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        $userId = \Illuminate\Support\Facades\Auth::id();
+        $user = Auth::user();
 
-        // Primary: use real Transaksi rows
-        $transaksis = \App\Models\Transaksi::where('user_id', $userId)
+        // Admin & karyawan: boleh lihat semua transaksi
+        if (in_array($user->role, ['admin', 'karyawan'], true)) {
+            $transaksis = Transaksi::with('user')
+                ->latest()
+                ->paginate(10);
+
+            return view('transaksi.index', compact('transaksis'));
+        }
+
+        // Role lain (pelanggan/guest login): hanya transaksi miliknya
+        $userId = $user->id;
+
+        $transaksis = Transaksi::with('user')
+            ->where('user_id', $userId)
             ->latest()
             ->paginate(10);
 
-        // Fallback: if no transaksi yet, derive from Pembayaran for this user
+        // Fallback: jika belum ada entry di transaksis, turunkan dari pembayaran user tsb
         if ($transaksis->count() === 0) {
-            $pays = \App\Models\Pembayaran::where('user_id', $userId)
+            $pays = Pembayaran::where('user_id', $userId)
                 ->orderByDesc('tanggal')
                 ->paginate(10);
 
             $collection = $pays->getCollection()->map(function ($p) use ($userId) {
                 $t = new \stdClass();
-                $t->kode       = 'PAY-' . $p->order_id;            // display code
+                $t->kode       = 'PAY-' . $p->order_id;
                 $t->user_id    = $userId;
                 $t->total      = $p->jumlah;
                 $t->status     = $p->status ?? 'proses verifikasi';
                 $t->created_at = \Carbon\Carbon::parse($p->tanggal);
                 return $t;
             });
+
             $pays->setCollection($collection);
             $transaksis = $pays;
         }
@@ -60,16 +73,15 @@ class TransaksiController extends Controller
      */
     public function store(Request $request)
     {
-        // contoh fields — ganti sesuai struktur Anda
         $validated = $request->validate([
-            'kode' => 'required|string|max:50|unique:transaksis,kode',
+            'kode'    => 'required|string|max:50|unique:transaksis,kode',
             'user_id' => 'required|integer|exists:users,id',
-            'total' => 'required|numeric|min:0',
-            'status' => 'required|string|max:50',
-            // tambahkan field lainnya di sini
+            'total'   => 'required|numeric|min:0',
+            'status'  => 'required|string|max:50',
+            'alamat'  => 'nullable|string|max:255',
         ]);
 
-        $transaksi = Transaksi::create($validated);
+        Transaksi::create($validated);
 
         return redirect()->route('transaksi.index')
             ->with('success', 'Transaksi berhasil dibuat.');
@@ -80,6 +92,17 @@ class TransaksiController extends Controller
      */
     public function show(Transaksi $transaksi)
     {
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        // Jika bukan admin/karyawan, hanya boleh lihat transaksi miliknya
+        if (!in_array($user->role, ['admin', 'karyawan'], true)
+            && $transaksi->user_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki akses.');
+        }
+
         return view('transaksi.show', compact('transaksi'));
     }
 
@@ -96,13 +119,12 @@ class TransaksiController extends Controller
      */
     public function update(Request $request, Transaksi $transaksi)
     {
-        // contoh rules update — unique kecuali record saat ini
         $validated = $request->validate([
-            'kode' => 'required|string|max:50|unique:transaksis,kode,' . $transaksi->id,
+            'kode'    => 'required|string|max:50|unique:transaksis,kode,' . $transaksi->id,
             'user_id' => 'required|integer|exists:users,id',
-            'total' => 'required|numeric|min:0',
-            'status' => 'required|string|max:50',
-            // tambahkan field lainnya di sini
+            'total'   => 'required|numeric|min:0',
+            'status'  => 'required|string|max:50',
+            'alamat'  => 'nullable|string|max:255',
         ]);
 
         $transaksi->update($validated);

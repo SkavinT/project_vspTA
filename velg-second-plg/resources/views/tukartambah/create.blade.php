@@ -82,8 +82,11 @@
                 @endphp
 
                 @if($canSetPrice)
-                    <input type="number" step="1" min="0" name="price" value="{{ old('price') }}"
-                           class="mt-1 w-full rounded border px-3 py-2">
+                    @php $priceOld = old('price'); @endphp
+                    <input type="text" id="trade_price_display"
+                           value="{{ $priceOld !== null ? number_format($priceOld, 0, ',', '.') : '' }}"
+                           class="mt-1 w-full rounded border px-3 py-2" autocomplete="off">
+                    <input type="hidden" name="price" id="trade_price" value="{{ $priceOld }}">
                     <p class="mt-1 text-xs text-gray-500">
                         Admin/karyawan dapat mengisi nilai tukar tambah di sini.
                     </p>
@@ -102,12 +105,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
             <div>
                 <label class="block text-sm font-medium">Harga Produk (otomatis)</label>
-                <input type="number" id="product_price" class="mt-1 w-full rounded border px-3 py-2 bg-gray-50"
+                <input type="text" id="product_price" class="mt-1 w-full rounded border px-3 py-2 bg-gray-50"
                        readonly>
             </div>
             <div>
                 <label class="block text-sm font-medium">Total Selisih yang Harus Dibayar</label>
-                <input type="number" id="total_diff" class="mt-1 w-full rounded border px-3 py-2 bg-gray-50"
+                <input type="text" id="total_diff" class="mt-1 w-full rounded border px-3 py-2 bg-gray-50"
                        readonly>
                 {{-- jika ingin total ikut terkirim ke server --}}
                 <input type="hidden" name="total" id="total_hidden">
@@ -161,29 +164,68 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const selectProduk   = document.querySelector('select[name="produk_id"]');
-        const inputTrade     = document.querySelector('input[name="price"]');
-        const inputProdPrice = document.getElementById('product_price');
-        const inputTotalDiff = document.getElementById('total_diff');
-        const inputTotalHid  = document.getElementById('total_hidden');
+document.addEventListener('DOMContentLoaded', function () {
+    const selectProduk   = document.querySelector('select[name="produk_id"]');
+    const tradeDisp      = document.getElementById('trade_price_display');
+    const tradeHid       = document.getElementById('trade_price');
+    const inputProdPrice = document.getElementById('product_price');
+    const inputTotalDiff = document.getElementById('total_diff');
+    const inputTotalHid  = document.getElementById('total_hidden');
 
-        function recalc() {
-            const option = selectProduk.options[selectProduk.selectedIndex] || {};
-            const hargaProduk = parseFloat(option.dataset.price || '0');
-            const tradeIn     = parseFloat(inputTrade.value || '0');
-            const selisih     = Math.max(hargaProduk - tradeIn, 0);
+    function parseRupiahInt(str) {
+        if (!str) return 0;
+        const onlyNum = String(str).replace(/\D/g, '');
+        const n = parseInt(onlyNum || '0', 10);
+        return isNaN(n) ? 0 : n;
+    }
 
-            if (inputProdPrice) inputProdPrice.value = hargaProduk || '';
-            if (inputTotalDiff) inputTotalDiff.value = selisih || '';
-            if (inputTotalHid)  inputTotalHid.value  = selisih || '';
+    function formatRupiahInt(n) {
+        n = parseInt(n || 0, 10);
+        const s = n.toString();
+        return s.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // 11000000 -> 11.000.000
+    }
+
+    function getHargaProduk() {
+        if (!selectProduk) return 0;
+        const opt = selectProduk.options[selectProduk.selectedIndex];
+        return parseRupiahInt(opt?.dataset.price || 0);
+    }
+
+    function recalc() {
+        const hargaProduk = getHargaProduk();
+        const tradeIn     = parseRupiahInt(tradeHid ? tradeHid.value : 0);
+        const selisih     = Math.max(hargaProduk - tradeIn, 0);
+
+        if (inputProdPrice) inputProdPrice.value = hargaProduk ? formatRupiahInt(hargaProduk) : '';
+        if (inputTotalDiff) inputTotalDiff.value = selisih ? formatRupiahInt(selisih) : '0';
+        if (inputTotalHid)  inputTotalHid.value  = selisih;
+    }
+
+    function syncTradeFromDisplay() {
+        if (!tradeDisp || !tradeHid) {
+            recalc();
+            return;
         }
-
-        if (selectProduk) selectProduk.addEventListener('change', recalc);
-        if (inputTrade)   inputTrade.addEventListener('input', recalc);
-
-        // hitung awal kalau ada nilai lama
+        const num = parseRupiahInt(tradeDisp.value);
+        tradeHid.value  = num;
+        tradeDisp.value = num ? formatRupiahInt(num) : '';
         recalc();
-    });
+    }
+
+    if (selectProduk) {
+        selectProduk.addEventListener('change', recalc);
+    }
+    if (tradeDisp) {
+        tradeDisp.addEventListener('input', syncTradeFromDisplay);
+        tradeDisp.addEventListener('blur', syncTradeFromDisplay);
+    }
+
+    // hitung awal kalau ada nilai lama
+    if (tradeDisp && tradeDisp.value) {
+        syncTradeFromDisplay();
+    } else {
+        recalc();
+    }
+});
 </script>
 @endpush

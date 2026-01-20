@@ -39,7 +39,8 @@
                 <td class="px-4 py-3 text-sm">{{ $pb->produk?->nama ?? '—' }}</td>
                 <td class="px-4 py-3">
                     @if($pb->gambar)
-                        <img src="{{ asset('storage/'.$pb->gambar) }}" alt="gambar" class="h-12 w-12 object-cover rounded">
+                        <img src="{{ asset('storage/'.$pb->gambar) }}" alt="gambar"
+                             class="h-16 w-24 object-cover rounded-md border border-gray-200">
                     @else
                         <span class="text-gray-400 text-sm">—</span>
                     @endif

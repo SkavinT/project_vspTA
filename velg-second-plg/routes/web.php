@@ -36,9 +36,6 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::resource('pembelian', PembelianController::class)
         ->only(['create','store','edit','update','destroy']);
 
-    Route::resource('tukar-tambah', TukarTambahController::class)
-        ->only(['index','show','edit','update']);
-
     // Admin: edit/update/destroy pembayaran
     Route::resource('pembayaran', PembayaranController::class)->only(['edit','update','destroy']);
 });
@@ -98,7 +95,7 @@ Route::middleware(['auth','role:guest,admin,karyawan'])->group(function () {
 
     // Tukar Tambah untuk pelanggan/karyawan/admin
     Route::resource('tukar-tambah', TukarTambahController::class)
-        ->only(['index','show','create','store']);
+        ->only(['index','show','create','store','edit','update']);
 });
 
 // Supplier: lihat supplier

@@ -109,14 +109,12 @@ class PembayaranController extends Controller
 
         // Only generate sales when paid/verified
         if (in_array($data['status'], ['diverifikasi','terkirim'], true) && is_array($pembayaran->items)) {
-            // Avoid duplicates: if any sales already linked to this payment, skip
             $already = Penjualan::where('payment_id', $pembayaran->id)->exists();
 
             if (!$already) {
                 foreach ($pembayaran->items as $it) {
                     $productId = (int)($it['id'] ?? 0);
                     $qty       = (int)($it['qty'] ?? 1);
-                    // Prefer current product price; fallback to item price
                     $price     = (float)(Produk::find($productId)?->harga ?? ($it['price'] ?? 0));
                     $total     = $qty * $price;
 
@@ -133,12 +131,19 @@ class PembayaranController extends Controller
             }
         }
 
-        // Optional: also sync transaksi status as you already do elsewhere
-        $orderId = $pembayaran->order_id;
+        // Sinkron status ke transaksi:
+        // - kode transaksi: ORD-YYYYMMDD-RANDOM6
+        // - pembayaran.order_id: semua digit dari kode (YYYYMMDD + digit random)
+        $numericId = (string) $pembayaran->order_id;
 
-        // Update all transaksi rows with matching order prefix (e.g., ORD-20251229-XXXXXX)
-        \App\Models\Transaksi::where('kode', 'like', 'ORD-' . $orderId . '-%')
-            ->update(['status' => $data['status']]);
+        if (strlen($numericId) >= 8) {
+            $datePart = substr($numericId, 0, 8); // contoh: 20260109
+
+            \App\Models\Transaksi::where('user_id', $pembayaran->user_id)
+                ->where('kode', 'like', 'ORD-' . $datePart . '-%')
+                ->where('total', $pembayaran->jumlah)
+                ->update(['status' => $data['status']]);
+        }
 
         return redirect()->route('pembayaran.index')->with('success', 'Status pembayaran berhasil diperbarui.');
     }

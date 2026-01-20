@@ -36,6 +36,7 @@
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Total</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Waktu</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Alamat</th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Aksi</th>
                     </tr>
                 </thead>
@@ -69,6 +70,9 @@
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-600">
                                 {{ optional($transaksi->created_at)->format('d M Y H:i') }}
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                {{ $transaksi->alamat ?? '—' }}
                             </td>
                             <td class="px-4 py-3 text-sm text-right">
                                 <div class="inline-flex items-center gap-2">

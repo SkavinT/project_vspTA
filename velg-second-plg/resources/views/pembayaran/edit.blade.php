@@ -31,7 +31,9 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">Jumlah</label>
-                <input type="number" name="jumlah" value="{{ old('jumlah', $pembayaran->jumlah) }}" readonly
+                <input type="text"
+                       value="Rp {{ number_format(old('jumlah', $pembayaran->jumlah), 0, ',', '.') }}"
+                       readonly
                        class="mt-1 w-full rounded-md border-gray-300">
             </div>
         </div>

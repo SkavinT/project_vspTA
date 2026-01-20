@@ -43,7 +43,15 @@
             </div>
             <div>
                 <label class="block text-sm font-medium">Harga Modal</label>
-                <input type="number" step="0.01" min="0" name="harga_modal" value="{{ old('harga_modal', 0) }}" class="mt-1 w-full rounded border px-3 py-2" required>
+                @php
+                    $hargaOld = old('harga_modal');
+                    $totalOld = old('total');
+                @endphp
+                <input type="text" id="harga_modal_display"
+                       value="{{ $hargaOld !== null ? number_format($hargaOld, 0, ',', '.') : '' }}"
+                       class="mt-1 w-full rounded border px-3 py-2" autocomplete="off" required>
+                <input type="hidden" name="harga_modal" id="harga_modal"
+                       value="{{ $hargaOld !== null ? $hargaOld : 0 }}">
             </div>
             <div>
                 <label class="block text-sm font-medium">Jumlah</label>
@@ -54,7 +62,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Total</label>
-                <input type="number" step="0.01" min="0" name="total" value="{{ old('total', 0) }}" class="mt-1 w-full rounded border px-3 py-2" required>
+                <input type="text" id="total_display"
+                       value="{{ $totalOld !== null ? number_format($totalOld, 0, ',', '.') : '0' }}"
+                       class="mt-1 w-full rounded border px-3 py-2" autocomplete="off" required>
+                <input type="hidden" name="total" id="total"
+                       value="{{ $totalOld !== null ? $totalOld : 0 }}">
                 <p class="text-xs text-gray-500 mt-1">Otomatis dihitung dari Harga Modal × Jumlah (bisa disesuaikan).</p>
             </div>
             <div>
@@ -77,26 +89,60 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const selProd  = document.querySelector('select[name="product_id"]');
-    const harga    = document.querySelector('input[name="harga_modal"]');
-    const jumlah   = document.querySelector('input[name="jumlah"]');
-    const total    = document.querySelector('input[name="total"]');
+    const selProd    = document.querySelector('select[name="product_id"]');
+    const hargaDisp  = document.getElementById('harga_modal_display');
+    const hargaHid   = document.getElementById('harga_modal');
+    const jumlah     = document.querySelector('input[name="jumlah"]');
+    const totalDisp  = document.getElementById('total_display');
+    const totalHid   = document.getElementById('total');
+
+    function parseRupiahInt(str) {
+        if (!str) return 0;
+        const onlyNum = String(str).replace(/\D/g, ''); // buang semua kecuali angka
+        const n = parseInt(onlyNum || '0', 10);
+        return isNaN(n) ? 0 : n;
+    }
+
+    function formatRupiahInt(n) {
+        n = parseInt(n || 0, 10);
+        const s = n.toString();
+        return s.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // 1000000 -> 1.000.000
+    }
 
     function recalc() {
-        const h = parseFloat(harga.value || 0);
+        const h = parseRupiahInt(hargaHid.value);
         const j = parseInt(jumlah.value || 0, 10);
-        const t = h * j;
-        total.value = Number.isFinite(t) ? t.toFixed(2) : 0;
+        const t = h * (isNaN(j) ? 0 : j);
+        totalHid.value  = t;
+        totalDisp.value = formatRupiahInt(t);
     }
-    selProd?.addEventListener('change', () => {
+
+    function syncHargaFromDisplay() {
+        const num = parseRupiahInt(hargaDisp.value);
+        hargaHid.value  = num;
+        hargaDisp.value = num ? formatRupiahInt(num) : '';
+        recalc();
+    }
+
+    selProd && selProd.addEventListener('change', () => {
         const opt = selProd.options[selProd.selectedIndex];
-        const pr = parseFloat(opt?.dataset.price || 0);
-        if (!Number.isNaN(pr)) harga.value = pr.toFixed(2);
+        const pr  = parseRupiahInt(opt?.dataset.price || 0);
+        hargaHid.value  = pr;
+        hargaDisp.value = pr ? formatRupiahInt(pr) : '';
         recalc();
     });
-    harga?.addEventListener('input', recalc);
-    jumlah?.addEventListener('input', recalc);
-    recalc();
+
+    hargaDisp && hargaDisp.addEventListener('input', syncHargaFromDisplay);
+    hargaDisp && hargaDisp.addEventListener('blur', syncHargaFromDisplay);
+    jumlah    && jumlah.addEventListener('input', recalc);
+    jumlah    && jumlah.addEventListener('blur', recalc);
+
+    // format awal
+    if (hargaDisp && hargaDisp.value) {
+        syncHargaFromDisplay();
+    } else {
+        recalc();
+    }
 });
 </script>
 @endsection

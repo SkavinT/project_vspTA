@@ -30,9 +30,10 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Harga</label>
-                <input type="number" name="harga" min="0" step="0.01"
-                       value="{{ old('harga') }}"
-                       class="mt-1 w-full rounded border px-3 py-2" required>
+                <input type="text" id="harga_display"
+                       value="{{ old('harga') ? number_format(old('harga'), 0, ',', '.') : '' }}"
+                       class="mt-1 w-full rounded border px-3 py-2" autocomplete="off" required>
+                <input type="hidden" name="harga" id="harga_hidden" value="{{ old('harga') }}">
             </div>
             <div>
                 <label class="block text-sm font-medium">Stok</label>
@@ -65,3 +66,34 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const disp = document.getElementById('harga_display');
+        const hid  = document.getElementById('harga_hidden');
+
+        if (!disp || !hid) return;
+
+        function formatRupiah(angka) {
+            const onlyNum = (angka || '').replace(/\D/g, '');
+            if (!onlyNum) return '';
+            return onlyNum.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function syncFromDisplay() {
+            const onlyNum = (disp.value || '').replace(/\D/g, '');
+            disp.value = formatRupiah(disp.value);
+            hid.value  = onlyNum || '';
+        }
+
+        // format awal jika ada nilai lama
+        if (disp.value) {
+            syncFromDisplay();
+        }
+
+        disp.addEventListener('input', syncFromDisplay);
+        disp.addEventListener('blur', syncFromDisplay);
+    });
+</script>
+@endpush

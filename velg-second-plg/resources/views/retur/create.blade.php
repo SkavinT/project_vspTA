@@ -96,9 +96,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium">Total</label>
-                <input type="number" step="0.01" min="0" name="total"
-                       value="{{ $prefilledTotal }}"
-                       class="mt-1 w-full rounded border px-3 py-2" required>
+                <input type="text" id="retur_total_display"
+                       value="{{ $prefilledTotal !== null ? number_format($prefilledTotal, 0, ',', '.') : '' }}"
+                       class="mt-1 w-full rounded border px-3 py-2" autocomplete="off" required>
+                <input type="hidden" name="total" id="retur_total"
+                       value="{{ $prefilledTotal ?? 0 }}">
             </div>
             <div>
                 <label class="block text-sm font-medium">Bukti (gambar / video, bisa lebih dari 1)</label>
@@ -144,3 +146,39 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const disp = document.getElementById('retur_total_display');
+    const hid  = document.getElementById('retur_total');
+    if (!disp || !hid) return;
+
+    function parseRupiahInt(str) {
+        if (!str) return 0;
+        const onlyNum = String(str).replace(/\D/g, '');
+        const n = parseInt(onlyNum || '0', 10);
+        return isNaN(n) ? 0 : n;
+    }
+
+    function formatRupiahInt(n) {
+        n = parseInt(n || 0, 10);
+        const s = n.toString();
+        return s.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function sync() {
+        const num = parseRupiahInt(disp.value);
+        hid.value  = num;
+        disp.value = num ? formatRupiahInt(num) : '';
+    }
+
+    if (disp.value) {
+        sync();
+    }
+
+    disp.addEventListener('input', sync);
+    disp.addEventListener('blur', sync);
+});
+</script>
+@endpush

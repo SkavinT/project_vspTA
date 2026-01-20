@@ -137,10 +137,11 @@ class CheckoutController extends Controller
         ]);
 
         Transaksi::create([
-            'kode'    => $orderId,              // use full order code (e.g., ORD-20251226-ABCDEF)
+            'kode'    => $orderId,
             'user_id' => $user?->id,
             'total'   => $total,
             'status'  => $data['status'] ?? 'proses verifikasi',
+            'alamat'  => $alamat,   // dari Pelanggan::findOrFail(...)->alamat
         ]);
 
         // keep for success page
