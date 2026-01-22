@@ -42,25 +42,27 @@
                             <td class="px-4 py-3 text-sm text-gray-600">
                                 {{ optional($pelanggan->created_at)->format('d M Y H:i') }}
                             </td>
-                            <td class="px-4 py-3 text-sm text-right">
-                                @if(Route::has('pelanggan.edit'))
-                                    <a href="{{ route('pelanggan.edit', $pelanggan) }}"
-                                       class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400">
-                                        Edit
-                                    </a>
-                                @endif
+                            <td class="px-4 py-3 text-sm">
+                                <div class="flex items-center justify-end gap-1.5 sm:gap-2">
+                                    @if(Route::has('pelanggan.edit'))
+                                        <a href="{{ route('pelanggan.edit', $pelanggan) }}"
+                                           class="inline-flex items-center rounded-md border border-indigo-300 bg-indigo-50 text-indigo-700 px-2.5 py-1.5 text-xs font-semibold shadow-sm hover:bg-indigo-100 hover:border-indigo-400">
+                                            Edit
+                                        </a>
+                                    @endif
 
-                                @if(Route::has('pelanggan.destroy'))
-                                    <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="post" class="inline"
-                                          onsubmit="return confirm('Yakin hapus pelanggan ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="inline-flex items-center rounded-md border border-red-300 bg-white text-red-600 px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-red-50 hover:border-red-400 ml-2">
-                                            Hapus
-                                        </button>
-                                    </form>
-                                @endif
+                                    @if(Route::has('pelanggan.destroy'))
+                                        <form action="{{ route('pelanggan.destroy', $pelanggan) }}" method="post"
+                                              onsubmit="return confirm('Yakin hapus pelanggan ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="inline-flex items-center rounded-md border border-red-300 bg-red-50 text-red-700 px-2.5 py-1.5 text-xs font-semibold shadow-sm hover:bg-red-100 hover:border-red-400">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @endforeach

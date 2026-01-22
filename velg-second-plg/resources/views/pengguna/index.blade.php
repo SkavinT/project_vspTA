@@ -39,7 +39,7 @@
                             <td class="px-4 py-3 text-sm">
                                 <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border uppercase
                                     @if($r === 'admin') bg-red-50 text-red-700 border-red-200
-                                    @elseif($r === 'karyawan' || $r === 'staff') bg-indigo-50 text-indigo-700 border-indigo-200
+                                    @elseif($r === 'karyawan' || $r === 'supplier') bg-indigo-50 text-indigo-700 border-indigo-200
                                     @else bg-gray-50 text-gray-700 border-gray-200
                                     @endif">
                                     {{ $r }}

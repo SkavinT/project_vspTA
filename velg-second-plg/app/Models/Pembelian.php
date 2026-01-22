@@ -18,6 +18,7 @@ class Pembelian extends Model
         'jumlah',
         'total',
         'keterangan',
+        'status',   // <– baru
     ];
 
     protected $casts = [

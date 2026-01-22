@@ -15,7 +15,7 @@
     <select name="role" class="mt-1 w-full rounded-md border-gray-300">
       <option value="guest"     @selected($role==='guest')>guest</option>
       <option value="user"      @selected($role==='user')>user</option>
-      <option value="staff"     @selected($role==='staff')>staff</option>
+      <option value="supplier"  @selected($role==='supplier')>supplier</option>
       <option value="karyawan"  @selected($role==='karyawan')>karyawan</option>
       <option value="admin"     @selected($role==='admin')>admin</option>
     </select>

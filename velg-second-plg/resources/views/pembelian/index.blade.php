@@ -1,6 +1,11 @@
 @extends('layouts.shop')
 
 @section('content')
+@php
+    $role       = auth()->user()->role ?? null;
+    $isSupplier = $role === 'supplier';
+@endphp
+
 <div class="mb-6 flex items-center justify-between">
     <div>
         <h1 class="text-2xl font-semibold">Pembelian</h1>
@@ -28,7 +33,11 @@
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Harga Modal</th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Jumlah</th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Total</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Status</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Keterangan</th>
+                @if($isSupplier)
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Aksi</th>
+                @endif
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -47,8 +56,39 @@
                 </td>
                 <td class="px-4 py-3 text-sm text-right">Rp {{ number_format($pb->harga_modal,0,',','.') }}</td>
                 <td class="px-4 py-3 text-sm text-right">{{ $pb->jumlah }}</td>
-                <td class="px-4 py-3 text-sm text-right font-semibold text-indigo-700">Rp {{ number_format($pb->total,0,',','.') }}</td>
+                <td class="px-4 py-3 text-sm text-right font-semibold text-indigo-700">
+                    Rp {{ number_format($pb->total,0,',','.') }}
+                </td>
+
+                <td class="px-4 py-3 text-sm">
+                    @php $status = $pb->status ?? 'dipesan'; @endphp
+                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs border
+                        @if($status === 'dipesan')
+                            bg-yellow-50 text-yellow-700 border-yellow-200
+                        @elseif($status === 'dikirim')
+                            bg-blue-50 text-blue-700 border-blue-200
+                        @elseif($status === 'diterima' || $status === 'selesai')
+                            bg-green-50 text-green-700 border-green-200
+                        @elseif($status === 'dibatalkan')
+                            bg-red-50 text-red-700 border-red-200
+                        @else
+                            bg-gray-50 text-gray-700 border-gray-200
+                        @endif
+                    ">
+                        {{ ucfirst($status) }}
+                    </span>
+                </td>
+
                 <td class="px-4 py-3 text-sm">{{ $pb->keterangan ?? '—' }}</td>
+
+                @if($isSupplier)
+                    <td class="px-4 py-3 text-sm text-right">
+                        <a href="{{ route('pembelian.edit', $pb) }}"
+                           class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                            Edit
+                        </a>
+                    </td>
+                @endif
             </tr>
             @endforeach
         </tbody>

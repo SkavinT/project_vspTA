@@ -38,15 +38,22 @@
                     <td class="px-4 py-3 text-sm">{{ $supplier->email ?? '—' }}</td>
                     <td class="px-4 py-3 text-sm">{{ $supplier->phone ?? '—' }}</td>
                     <td class="px-4 py-3 text-sm">{{ $supplier->address ?? '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-right">
-                        @if(Route::has('suppliers.show'))
-                            <a href="{{ route('suppliers.show', $supplier) }}"
-                               class="rounded-md border px-3 py-1.5 hover:bg-gray-100">Detail</a>
-                        @endif
-                        @if(Route::has('suppliers.edit'))
-                            <a href="{{ route('suppliers.edit', $supplier) }}"
-                               class="rounded-md border px-3 py-1.5 hover:bg-gray-100">Edit</a>
-                        @endif
+                    <td class="px-4 py-3 text-sm">
+                        <div class="flex items-center justify-end gap-1.5 sm:gap-2">
+                            @if(Route::has('suppliers.show'))
+                                <a href="{{ route('suppliers.show', $supplier) }}"
+                                   class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                    Detail
+                                </a>
+                            @endif
+
+                            @if(Route::has('suppliers.edit'))
+                                <a href="{{ route('suppliers.edit', $supplier) }}"
+                                   class="inline-flex items-center rounded-md border border-indigo-300 bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-100">
+                                    Edit
+                                </a>
+                            @endif
+                        </div>
                     </td>
                 </tr>
             @endforeach

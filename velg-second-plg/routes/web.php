@@ -20,60 +20,70 @@ use Illuminate\Support\Facades\Route;
 // Halaman utama
 Route::get('/', [ProdukController::class, 'index'])->name('home');
 
-// Produk (index, show, create, store, edit, update)
+// Produk (index, show) untuk semua pengunjung
 Route::resource('produk', ProdukController::class)
-    ->only(['index','show'])
+    ->only(['index', 'show'])
     ->whereNumber('produk');
 
-Route::middleware(['auth','role:admin'])->group(function () {
-    // Admin-only: create, store, edit, update, destroy produk
-    Route::resource('produk', ProdukController::class)->only(['create','store','edit','update']);
-    Route::delete('produk/{produk}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+// ======================= ADMIN =========================
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    // Produk: kelola penuh (kecuali index/show sudah di atas)
+    Route::resource('produk', ProdukController::class)
+        ->only(['create', 'store', 'edit', 'update']);
+    Route::delete('produk/{produk}', [ProdukController::class, 'destroy'])
+        ->name('produk.destroy');
 
+    // Supplier: HANYA admin yang bisa melihat & kelola
     Route::resource('suppliers', SupplierController::class)
-        ->only(['create','store','edit','update','destroy']);
+        ->only(['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']);
 
+    // Pembelian: admin boleh buat & hapus
     Route::resource('pembelian', PembelianController::class)
-        ->only(['create','store','edit','update','destroy']);
+        ->only(['create', 'store', 'destroy']);
 
-    // Admin: edit/update/destroy pembayaran
-    Route::resource('pembayaran', PembayaranController::class)->only(['edit','update','destroy']);
-});
+    // Retur: penuh untuk admin
+    Route::resource('retur', ReturController::class)
+        ->only(['index', 'show', 'create', 'store', 'edit', 'update']);
 
-// Admin & Karyawan: stok, penjualan, dan pembayaran (index/show + ubah status)
-Route::middleware(['auth','role:admin,karyawan'])->group(function () {
-    Route::resource('stok', StokController::class)->only(['index','show']);
-    Route::resource('penjualan', PenjualanController::class)->only(['index','show','create','store']);
-    Route::resource('pembayaran', PembayaranController::class)->only(['index','show']);
-});
-
-// Admin-only modul lain
-Route::middleware(['auth','role:admin'])->group(function () {
-    Route::resource('penjualan', PenjualanController::class)->only(['index','show','create','store']);
-    Route::resource('pembelian', PembelianController::class)->only(['index','show']);
-    Route::resource('stok', StokController::class)->only(['index','show']);
-
-    Route::resource('retur', ReturController::class)->only(['index','show','create','store','edit','update']);
-    Route::resource('suppliers', SupplierController::class)->only(['index','show']);
+    // Pengguna (manajemen user)
     Route::resource('penggunas', PenggunaController::class)
-        ->only(['index','show','edit','update']);
-    Route::resource('laporan-transaksi', LaporanTransaksiController::class)->only(['index','show']);
+        ->only(['index', 'show', 'edit', 'update']);
+
+    // Laporan transaksi
+    Route::resource('laporan-transaksi', LaporanTransaksiController::class)
+        ->only(['index', 'show']);
+
+    // Pembayaran: admin boleh edit/update/destroy data pembayaran
+    Route::resource('pembayaran', PembayaranController::class)
+        ->only(['edit', 'update', 'destroy']);
 });
 
-// Resource umum (tanpa pembayarans, karena sudah diatur di atas)
-Route::resource('penjualan', PenjualanController::class)->only(['index','show','create','store']);
-Route::resource('pembelian', PembelianController::class)->only(['index','show']);
-Route::resource('laporan-transaksi', LaporanTransaksiController::class)->only(['index','show']);
-Route::resource('stok', StokController::class)->only(['index','show']);
-Route::resource('retur', ReturController::class)->only(['index','show','create','store']);
+// ========== ADMIN + KARYAWAN (OPERASIONAL TOKO) ==========
+Route::middleware(['auth', 'role:admin,karyawan'])->group(function () {
+    // Penjualan
+    Route::resource('penjualan', PenjualanController::class)
+        ->only(['index', 'show', 'create', 'store']);
 
-Route::resource('pelanggan', PelangganController::class)
-    ->only(['index','show','create','store','edit','update','destroy']);
-Route::resource('suppliers', SupplierController::class)->only(['index','show']);
-Route::resource('penggunas', PenggunaController::class)->only(['index','show','edit','update']);
+    // Pembayaran: lihat daftar & detail
+    Route::resource('pembayaran', PembayaranController::class)
+        ->only(['index', 'show']);
+});
 
-// Cart, checkout, transaksi & pelanggan (role guest/admin/karyawan)
-Route::middleware(['auth','role:guest,admin,karyawan'])->group(function () {
+// Stok: bisa dilihat admin, karyawan, dan supplier
+Route::middleware(['auth', 'role:admin,karyawan,supplier'])->group(function () {
+    Route::resource('stok', StokController::class)
+        ->only(['index', 'show']);
+});
+
+// ========== ADMIN + SUPPLIER (PEMBELIAN) ==========
+// Pembelian: admin & supplier boleh lihat + edit miliknya (filter di controller)
+Route::middleware(['auth', 'role:admin,supplier'])->group(function () {
+    Route::resource('pembelian', PembelianController::class)
+        ->only(['index', 'show', 'edit', 'update']);
+});
+
+// ========== CART, CHECKOUT, TRANSAKSI PELANGGAN ==========
+Route::middleware(['auth', 'role:guest,admin,karyawan'])->group(function () {
     // Cart
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
@@ -86,24 +96,19 @@ Route::middleware(['auth','role:guest,admin,karyawan'])->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/sukses', [CheckoutController::class, 'success'])->name('checkout.success');
 
-    // Transaksi (own only)
-    Route::resource('transaksi', TransaksiController::class)->only(['index','show']);
+    // Transaksi (hanya transaksi milik user tersebut, diatur di controller)
+    Route::resource('transaksi', TransaksiController::class)->only(['index', 'show']);
 
-    // Pelanggan (kelola alamat)
+    // Pelanggan (alamat user)
     Route::resource('pelanggan', PelangganController::class)
-        ->only(['index','create','store','edit','update','destroy']);
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
-    // Tukar Tambah untuk pelanggan/karyawan/admin
+    // Tukar Tambah (pengajuan pelanggan/karyawan/admin)
     Route::resource('tukar-tambah', TukarTambahController::class)
-        ->only(['index','show','create','store','edit','update']);
+        ->only(['index', 'show', 'create', 'store', 'edit', 'update']);
 });
 
-// Supplier: lihat supplier
-Route::middleware(['auth','role:supplier'])->group(function () {
-    Route::resource('suppliers', SupplierController::class)->only(['index','show']);
-});
-
-// Dashboard → beranda produk
+// ================== DASHBOARD & PROFIL ==================
 Route::get('/dashboard', function () {
     return redirect()->route('home');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -114,7 +119,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Ubah status pembayaran: cukup login, cek role di controller
+// ========== UB AH STATUS PEMBAYARAN (CEK ROLE DI CONTROLLER) ==========
 Route::middleware(['auth'])->group(function () {
     Route::get('pembayaran/{pembayaran}/status', [PembayaranController::class, 'edit'])
         ->name('pembayaran.karyawan.edit');
@@ -122,4 +127,4 @@ Route::middleware(['auth'])->group(function () {
         ->name('pembayaran.karyawan.update');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

@@ -75,6 +75,20 @@
             </div>
         </div>
 
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+            <div>
+                <label class="block text-sm font-medium">Status</label>
+                @php $st = old('status', 'dipesan'); @endphp
+                <select name="status" class="mt-1 w-full rounded border px-3 py-2">
+                    <option value="dipesan"   @selected($st === 'dipesan')>Dipesan</option>
+                    <option value="dikirim"   @selected($st === 'dikirim')>Dikirim</option>
+                    <option value="diterima"  @selected($st === 'diterima')>Diterima</option>
+                    <option value="selesai"   @selected($st === 'selesai')>Selesai</option>
+                    <option value="dibatalkan"@selected($st === 'dibatalkan')>Dibatalkan</option>
+                </select>
+            </div>
+        </div>
+
         <div>
             <label class="block text-sm font-medium">Keterangan</label>
             <textarea name="keterangan" rows="3" class="mt-1 w-full rounded border px-3 py-2">{{ old('keterangan') }}</textarea>

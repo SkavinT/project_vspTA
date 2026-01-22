@@ -68,42 +68,44 @@
                                     <span class="text-gray-400">—</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-sm text-right">
-                                @if(Route::has('pembayaran.show'))
-                                    <a href="{{ route('pembayaran.show', $pembayaran) }}"
-                                       class="rounded-md border px-3 py-1.5 hover:bg-gray-100">
-                                        Detail
-                                    </a>
-                                @endif
+                            <td class="px-4 py-3 text-sm">
+                                <div class="flex items-center justify-end gap-1.5 sm:gap-2">
+                                    @if(Route::has('pembayaran.show'))
+                                        <a href="{{ route('pembayaran.show', $pembayaran) }}"
+                                           class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50">
+                                            Detail
+                                        </a>
+                                    @endif
 
-                                @if(auth()->user()?->role === 'admin')
-                                    <a href="{{ route('pembayaran.edit', $pembayaran) }}"
-                                       class="inline-flex items-center rounded-md border border-indigo-300 bg-white text-indigo-600 px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-indigo-50 hover:border-indigo-400">
-                                        Edit
-                                    </a>
-                                    <form action="{{ route('pembayaran.destroy', $pembayaran) }}" method="post" class="inline-block ml-2"
-                                          onsubmit="return confirm('Yakin hapus pembayaran ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="inline-flex items-center rounded-md border border-red-300 bg-white text-red-600 px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-red-50 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500">
-                                            Hapus
-                                        </button>
-                                    </form>
-                                @endif
+                                    @if(auth()->user()?->role === 'admin')
+                                        <a href="{{ route('pembayaran.edit', $pembayaran) }}"
+                                           class="inline-flex items-center rounded-md border border-indigo-300 bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-100">
+                                            Edit
+                                        </a>
 
+                                        <form action="{{ route('pembayaran.destroy', $pembayaran) }}" method="post"
+                                              onsubmit="return confirm('Yakin hapus pembayaran ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="inline-flex items-center rounded-md border border-red-300 bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-700 shadow-sm hover:bg-red-100">
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    @endif
 
-                                @if(auth()->user()?->role === 'admin')
-                                    <a href="{{ route('pembayaran.edit', $pembayaran) }}"
-                                       class="btn btn-sm">
-                                        Ubah Status
-                                    </a>
-                                @elseif(auth()->user()?->role === 'karyawan')
-                                    <a href="{{ route('pembayaran.karyawan.edit', $pembayaran) }}"
-                                       class="btn btn-sm">
-                                        Ubah Status
-                                    </a>
-                                @endif
+                                    @if(auth()->user()?->role === 'admin')
+                                        <a href="{{ route('pembayaran.edit', $pembayaran) }}"
+                                           class="inline-flex items-center rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm hover:bg-emerald-100">
+                                            Ubah Status
+                                        </a>
+                                    @elseif(auth()->user()?->role === 'karyawan')
+                                        <a href="{{ route('pembayaran.karyawan.edit', $pembayaran) }}"
+                                           class="inline-flex items-center rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm hover:bg-emerald-100">
+                                            Ubah Status
+                                        </a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @endforeach

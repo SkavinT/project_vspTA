@@ -29,17 +29,28 @@ class SupplierController extends Controller
      */
     public function store(Request $request)
     {
+        $messages = [
+            'email.email' => 'Format email tidak valid.',
+        ];
+
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
-            'email'   => 'nullable|email|unique:suppliers,email',
+            'email'   => 'nullable|email', // tanpa unique di sini
             'phone'   => 'nullable|string|max:50',
             'address' => 'nullable|string|max:1000',
-        ]);
+        ], $messages);
+
+        // Cek manual apakah email supplier sudah ada
+        if (!empty($validated['email']) && Supplier::where('email', $validated['email'])->exists()) {
+            return back()
+                ->withErrors(['email' => 'Email supplier ini sudah terdaftar, gunakan email lain.'])
+                ->withInput();
+        }
 
         Supplier::create($validated);
 
         return redirect()->route('suppliers.index')
-            ->with('success', 'Supplier created successfully.');
+            ->with('success', 'Supplier berhasil ditambahkan.');
     }
 
     /**
@@ -63,17 +74,33 @@ class SupplierController extends Controller
      */
     public function update(Request $request, Supplier $supplier)
     {
+        $messages = [
+            'email.email' => 'Format email tidak valid.',
+        ];
+
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
-            'email'   => 'nullable|email|unique:suppliers,email,' . $supplier->id,
+            'email'   => 'nullable|email',
             'phone'   => 'nullable|string|max:50',
             'address' => 'nullable|string|max:1000',
-        ]);
+        ], $messages);
+
+        if (!empty($validated['email'])) {
+            $exists = Supplier::where('email', $validated['email'])
+                ->where('id', '!=', $supplier->id)
+                ->exists();
+
+            if ($exists) {
+                return back()
+                    ->withErrors(['email' => 'Email supplier ini sudah terdaftar, gunakan email lain.'])
+                    ->withInput();
+            }
+        }
 
         $supplier->update($validated);
 
         return redirect()->route('suppliers.index')
-            ->with('success', 'Supplier updated successfully.');
+            ->with('success', 'Supplier berhasil diperbarui.');
     }
 
     /**

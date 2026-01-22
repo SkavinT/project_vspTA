@@ -103,18 +103,18 @@
                 ['label'=>'Penjualan','route'=>'penjualan.index','match'=>'penjualan.*','show'=>($isAdmin || $isKaryawan)],
 
                 // Pembelian & gudang
-                ['label'=>'Pembelian','route'=>'pembelian.index','match'=>'pembelian.*','show'=>$isAdmin],
-                ['label'=>'Stok','route'=>'stok.index','match'=>'stok.*','show'=>($isAdmin || $isKaryawan)],
+                ['label'=>'Pembelian','route'=>'pembelian.index','match'=>'pembelian.*','show'=>($isAdmin || $isSupplier)],
+                ['label'=>'Stok','route'=>'stok.index','match'=>'stok.*','show'=>($isAdmin || $isKaryawan || $isSupplier)],
                 ['label'=>'Retur','route'=>'retur.index','match'=>'retur.*','show'=>$isAdmin],
                 ['label'=>'Tukar Tambah','route'=>'tukar-tambah.index','match'=>'tukar-tambah.*','show'=>$isAdmin],
 
                 // Keuangan & transaksi
-                ['label'=>'Transaksi','route'=>'transaksi.index','match'=>'transaksi.*','show'=>$isAuth],
-                ['label'=>'Pembayaran','route'=>'pembayaran.index','match'=>'pembayaran.*','show'=>$isAuth], // admin/karyawan get more actions via routes
+                ['label'=>'Transaksi','route'=>'transaksi.index','match'=>'transaksi.*','show'=>($isAuth && !$isSupplier)],
+                ['label'=>'Pembayaran','route'=>'pembayaran.index','match'=>'pembayaran.*','show'=>($isAuth && !$isSupplier)],
 
                 // Relasi dan admin
-                ['label'=>'Pelanggan','route'=>'pelanggan.index','match'=>'pelanggan.*','show'=>$isAuth],     // non-admin sees only own data
-                ['label'=>'Supplier','route'=>'suppliers.index','match'=>'suppliers.*','show'=>($isAdmin || $isSupplier)],
+                ['label'=>'Pelanggan','route'=>'pelanggan.index','match'=>'pelanggan.*','show'=>($isAuth && !$isSupplier)],
+                ['label'=>'Supplier','route'=>'suppliers.index','match'=>'suppliers.*','show'=>$isAdmin],
                 ['label'=>'Pengguna','route'=>'penggunas.index','match'=>'penggunas.*','show'=>$isAdmin],
                 ['label'=>'Laporan Transaksi','route'=>'laporan-transaksi.index','match'=>'laporan-transaksi.*','show'=>$isAdmin],
             ];

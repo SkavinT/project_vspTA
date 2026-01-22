@@ -7,6 +7,7 @@ use App\Models\Supplier;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class PembelianController extends Controller
 {
@@ -15,7 +16,24 @@ class PembelianController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
+        if (!$user) {
+            abort(403);
+        }
+
         $query = Pembelian::query()->with(['supplier','produk']);
+
+        if ($user->role === 'supplier') {
+            $supplier = Supplier::where('email', $user->email)->first();
+            if (!$supplier) {
+                // supplier belum terhubung ke data supplier manapun → tidak ada data
+                $query->whereRaw('1=0');
+            } else {
+                $query->where('supplier_id', $supplier->id);
+            }
+        } elseif ($user->role !== 'admin') {
+            abort(403);
+        }
 
         if ($request->filled('q')) {
             $q = trim($request->q);
@@ -47,6 +65,11 @@ class PembelianController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            abort(403);
+        }
+
         $data = $request->validate([
             'tanggal'     => 'required|date',
             'supplier_id' => 'required|exists:suppliers,id',
@@ -56,6 +79,7 @@ class PembelianController extends Controller
             'total'       => 'nullable|numeric|min:0',
             'keterangan'  => 'nullable|string|max:1000',
             'gambar'      => 'nullable|image|max:2048',
+            'status'      => 'nullable|string|in:dipesan,dikirim,diterima,selesai,dibatalkan',
         ]);
 
         $path = null;
@@ -63,11 +87,12 @@ class PembelianController extends Controller
             $path = $request->file('gambar')->store('pembelian', 'public');
         }
 
-        $jumlah = (int)$data['jumlah'];
-        $harga  = (float)$data['harga_modal'];
+        $jumlah = (int) $data['jumlah'];
+        $harga  = (float) $data['harga_modal'];
         $total  = $data['total'] ?? ($jumlah * $harga);
+        $status = $data['status'] ?? 'dipesan';
 
-        Pembelian::create([
+        $pembelian = Pembelian::create([
             'tanggal'     => $data['tanggal'],
             'supplier_id' => $data['supplier_id'],
             'product_id'  => $data['product_id'],
@@ -76,24 +101,18 @@ class PembelianController extends Controller
             'jumlah'      => $jumlah,
             'total'       => $total,
             'keterangan'  => $data['keterangan'] ?? null,
+            'status'      => $status,
         ]);
 
-        // Tambah stok produk
-        $produk = Produk::find($data['product_id']);
-        if ($produk) {
-            $produk->increment('stok', $jumlah);
+        // Stok hanya bertambah jika langsung dibuat dengan status 'diterima'
+        if ($status === 'diterima') {
+            $produk = Produk::find($data['product_id']);
+            if ($produk) {
+                $produk->increment('stok', $jumlah);
+            }
         }
 
         return redirect()->route('pembelian.index')->with('success', 'Pembelian berhasil dibuat.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Pembelian $pembelian)
-    {
-        $pembelian->load(['supplier','produk']);
-        return view('pembelian.show', compact('pembelian'));
     }
 
     /**
@@ -101,6 +120,8 @@ class PembelianController extends Controller
      */
     public function edit(Pembelian $pembelian)
     {
+        $this->authorizePembelian($pembelian);
+
         $suppliers = Supplier::orderBy('name')->get(['id','name']);
         $produks   = Produk::orderBy('nama')->get(['id','nama','harga','gambar']);
         return view('pembelian.edit', compact('pembelian','suppliers','produks'));
@@ -111,6 +132,36 @@ class PembelianController extends Controller
      */
     public function update(Request $request, Pembelian $pembelian)
     {
+        $this->authorizePembelian($pembelian);
+
+        $user      = Auth::user();
+        $oldStatus = $pembelian->status ?? 'dipesan';
+
+        // JIKA SUPPLIER → hanya boleh ubah status
+        if ($user && $user->role === 'supplier') {
+            $data = $request->validate([
+                'status' => 'required|string|in:dipesan,dikirim,diterima,selesai,dibatalkan',
+            ]);
+
+            $newStatus = $data['status'];
+
+            $pembelian->update([
+                'status' => $newStatus,
+            ]);
+
+            // stok naik hanya saat status bergeser ke "diterima"
+            if ($oldStatus !== 'diterima' && $newStatus === 'diterima') {
+                $produk = Produk::find($pembelian->product_id);
+                if ($produk) {
+                    $produk->increment('stok', $pembelian->jumlah);
+                }
+            }
+
+            return redirect()->route('pembelian.index')
+                ->with('success', 'Status pembelian berhasil diperbarui.');
+        }
+
+        // JIKA ADMIN → boleh edit semua field (logika lama)
         $data = $request->validate([
             'tanggal'     => 'required|date',
             'supplier_id' => 'required|exists:suppliers,id',
@@ -120,6 +171,7 @@ class PembelianController extends Controller
             'total'       => 'nullable|numeric|min:0',
             'keterangan'  => 'nullable|string|max:1000',
             'gambar'      => 'nullable|image|max:2048',
+            'status'      => 'nullable|string|in:dipesan,dikirim,diterima,selesai,dibatalkan',
         ]);
 
         $path = $pembelian->gambar;
@@ -130,9 +182,17 @@ class PembelianController extends Controller
             $path = $request->file('gambar')->store('pembelian', 'public');
         }
 
-        $jumlah = (int)$data['jumlah'];
-        $harga  = (float)$data['harga_modal'];
-        $total  = $data['total'] ?? ($jumlah * $harga);
+        $jumlah    = (int) $data['jumlah'];
+        $harga     = (float) $data['harga_modal'];
+        $total     = $data['total'] ?? ($jumlah * $harga);
+        $oldStatus = $pembelian->status ?? 'dipesan';
+
+        // Hanya supplier yang boleh mengubah status
+        if ($user && $user->role === 'supplier' && isset($data['status'])) {
+            $newStatus = $data['status'];
+        } else {
+            $newStatus = $oldStatus;
+        }
 
         $pembelian->update([
             'tanggal'     => $data['tanggal'],
@@ -143,7 +203,16 @@ class PembelianController extends Controller
             'jumlah'      => $jumlah,
             'total'       => $total,
             'keterangan'  => $data['keterangan'] ?? null,
+            'status'      => $newStatus,
         ]);
+
+        // Jika baru saja berubah menjadi 'diterima', tambahkan stok produk
+        if ($oldStatus !== 'diterima' && $newStatus === 'diterima') {
+            $produk = Produk::find($data['product_id']);
+            if ($produk) {
+                $produk->increment('stok', $jumlah);
+            }
+        }
 
         return redirect()->route('pembelian.index')->with('success', 'Pembelian berhasil diperbarui.');
     }
@@ -158,5 +227,27 @@ class PembelianController extends Controller
         }
         $pembelian->delete();
         return redirect()->route('pembelian.index')->with('success', 'Pembelian berhasil dihapus.');
+    }
+
+    protected function authorizePembelian(Pembelian $pembelian): void
+    {
+        $user = Auth::user();
+        if (!$user) {
+            abort(403);
+        }
+
+        if ($user->role === 'admin') {
+            return;
+        }
+
+        if ($user->role === 'supplier') {
+            $supplier = Supplier::where('email', $user->email)->first();
+            if ($supplier && $pembelian->supplier_id === $supplier->id) {
+                return;
+            }
+            abort(403);
+        }
+
+        abort(403);
     }
 }

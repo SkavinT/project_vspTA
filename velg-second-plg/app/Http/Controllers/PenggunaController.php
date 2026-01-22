@@ -57,7 +57,7 @@ class PenggunaController extends Controller
             'nama'     => 'required|string|max:255',
             'email'    => 'required|email|unique:penggunas,email',
             'password' => 'required|string|min:6|confirmed',
-            'role'     => 'nullable|in:guest,user,staff,admin', // allow null
+            'role'     => 'nullable|in:guest,user,supplier,admin', // allow null
         ]);
 
         $data['password'] = Hash::make($data['password']);
@@ -95,7 +95,7 @@ class PenggunaController extends Controller
             'nama'     => 'required|string|max:255',
             'email'    => ['required','email', Rule::unique('penggunas','email')->ignore($pengguna->id)],
             'password' => 'nullable|string|min:6|confirmed',
-            'role'     => 'required|in:guest,user,staff,karyawan,admin',
+            'role'     => 'required|in:guest,user,supplier,karyawan,admin',
         ]);
 
         if (!empty($data['password'])) {

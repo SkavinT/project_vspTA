@@ -60,9 +60,37 @@
                 <label class="block text-sm font-medium">Gambar (opsional)</label>
                 <input type="file" name="gambar" accept="image/*" class="mt-1 block w-full">
                 @if($pembelian->gambar)
-                    <p class="mt-2 text-sm">Saat ini:
-                        <img src="{{ asset('storage/'.$pembelian->gambar) }}" alt="gambar" class="h-12 w-12 object-cover rounded inline-block">
-                    </p>
+                    <div class="mt-2 text-sm">
+                        <span class="block mb-1">Foto saat ini:</span>
+                        <img src="{{ asset('storage/'.$pembelian->gambar) }}" alt="gambar"
+                             class="rounded border"
+                             style="max-width: 220px; max-height: 220px; object-fit: cover; object-position: center;">
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        @php
+            $role = auth()->user()->role ?? null;
+            $isSupplier = $role === 'supplier';
+            $st = old('status', $pembelian->status ?? 'dipesan');
+        @endphp
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+            <div>
+                <label class="block text-sm font-medium">Status</label>
+
+                @if($isSupplier)
+                    <select name="status" class="mt-1 w-full rounded border px-3 py-2">
+                        <option value="dipesan"   @selected($st === 'dipesan')>Dipesan</option>
+                        <option value="dikirim"   @selected($st === 'dikirim')>Dikirim</option>
+                        <option value="diterima"  @selected($st === 'diterima')>Diterima</option>
+                        <option value="selesai"   @selected($st === 'selesai')>Selesai</option>
+                        <option value="dibatalkan"@selected($st === 'dibatalkan')>Dibatalkan</option>
+                    </select>
+                @else
+                    <input type="text" value="{{ ucfirst($st) }}"
+                           class="mt-1 w-full rounded border px-3 py-2 bg-gray-50" readonly>
                 @endif
             </div>
         </div>
