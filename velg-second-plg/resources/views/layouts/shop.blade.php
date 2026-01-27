@@ -7,11 +7,11 @@
     @vite(['resources/css/app.css','resources/js/app.js'])
 </head>
 <body class="min-h-full bg-gradient-to-b from-sky-100 via-indigo-50 to-white text-gray-900">
-    <header class="border-none bg-transparent pt-6">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-4">
+    <header class="bg-white/80 backdrop-blur border-b border-slate-200/70">
+        <div class="w-full px-4 sm:px-6 lg:px-10 space-y-4">
 
             {{-- BAR ATAS: logo + search + action --}}
-            <div class="flex items-center gap-3 sm:gap-4 rounded-2xl bg-white/90 shadow-lg px-4 sm:px-6 py-4">
+            <div class="flex items-center gap-3 sm:gap-4 py-4">
                 <a href="{{ route('home') }}" class="flex items-center gap-2 sm:gap-3 shrink-0" aria-label="Beranda">
                     <img src="{{ asset('images/vsplogo.jpg') }}" alt="Logo VELGSECONDPLG"
                          style="width:160px;height:70px"
