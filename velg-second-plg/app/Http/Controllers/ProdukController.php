@@ -12,10 +12,23 @@ class ProdukController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $produks = Produk::latest()->paginate(12);
-        return view('produk.index', compact('produks'));
+        $q = trim((string) $request->query('q', ''));
+
+        $produks = Produk::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $like = '%' . $q . '%';
+                $query->where(function ($subQuery) use ($like) {
+                    $subQuery->where('nama', 'like', $like)
+                        ->orWhere('deskripsi', 'like', $like);
+                });
+            })
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('produk.index', compact('produks', 'q'));
     }
 
     /**

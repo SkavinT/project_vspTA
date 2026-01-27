@@ -11,95 +11,98 @@
         <div class="w-full px-4 sm:px-6 lg:px-10 space-y-4">
 
             {{-- BAR ATAS: logo + search + action --}}
-            <div class="flex items-center gap-3 sm:gap-4 py-4">
+            <div class="flex flex-col gap-3 sm:gap-4 py-4 md:flex-row md:items-center">
                 <a href="{{ route('home') }}" class="flex items-center gap-2 sm:gap-3 shrink-0" aria-label="Beranda">
                     <img src="{{ asset('images/vsplogo.jpg') }}" alt="Logo VELGSECONDPLG"
                          style="width:160px;height:70px"
                          class="object-contain shrink-0 align-middle">
                 </a>
 
-                <form action="{{ route('produk.index') }}" method="get" class="flex-1 hidden md:flex">
-                    <div class="relative w-full">
-                        <input name="q" type="text" placeholder="Cari velg, supplier, pelanggan..."
-                               class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
-                        </svg>
+                {{-- Group kanan: search + action --}}
+                <div class="w-full md:w-auto md:ml-auto flex items-center justify-end gap-3">
+                    <form action="{{ route('produk.index') }}" method="get" class="w-full md:w-80 lg:w-96">
+                        <div class="relative w-full">
+                            <input name="q" type="text" value="{{ request('q') }}"
+                                   placeholder="Cari velg, supplier, pelanggan..."
+                                   class="w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-4 py-2 text-sm
+                                  focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                            <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+                            </svg>
+                        </div>
+                    </form>
+
+                    <div class="flex items-center justify-end gap-2 sm:gap-3">
+                        {{-- pindahkan seluruh isi tombol-tombol kanan kamu ke sini (keranjang, profil, logout, dst) --}}
+                        @auth
+                            {{-- Tombol keranjang --}}
+                            <a href="{{ route('cart.index') }}"
+                               class="relative inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm hover:bg-gray-50 transition"
+                               aria-label="Keranjang">
+                                <svg class="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-2-8H3"/>
+                                    <circle cx="9" cy="19" r="1.8"/>
+                                    <circle cx="17" cy="19" r="1.8"/>
+                                </svg>
+                                @php
+                                    $cartKey = auth()->check() ? 'cart_user_'.auth()->id() : 'cart_guest';
+                                    $cartCount = collect(session($cartKey, session('cart', [])))->sum('qty');
+                                @endphp
+                                @if($cartCount > 0)
+                                    <span class="pointer-events-none absolute top-0 right-0 translate-x-[75%] -translate-y-[75%] z-10 min-w-[20px] h-[20px] rounded-full bg-red-600 text-white text-[11px] font-bold ring-2 ring-white flex items-center justify-center px-1 leading-none">
+                                        {{ $cartCount }}
+                                    </span>
+                                @endif
+                            </a>
+                        @else
+                            <a href="{{ route('login', ['msg' => 'login-required', 'redirect' => route('cart.index')]) }}"
+                               class="relative inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm hover:bg-gray-50 transition"
+                               aria-label="Keranjang">
+                                <svg class="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-2-8H3"/>
+                                    <circle cx="9" cy="19" r="1.8"/>
+                                    <circle cx="17" cy="19" r="1.8"/>
+                                </svg>
+                            </a>
+                        @endauth
+
+                        {{-- lanjutkan tombol profil/logout/daftar kamu di sini (copy dari file lama) --}}
+                        @auth
+                            <a href="{{ route('profile.edit') }}"
+                               class="hidden sm:inline-flex items-center rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-900 hover:bg-gray-50 transition">
+                                {{ auth()->user()->name ?? auth()->user()->email ?? 'Profil' }}
+                            </a>
+
+                            <a href="{{ route('profile.edit') }}"
+                               class="hidden sm:inline-flex items-center rounded-xl bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition">
+                                {{ auth()->user()->name ?? auth()->user()->email ?? 'Profil' }}
+                            </a>
+
+                            <form method="POST" action="{{ route('logout') }}" class="inline">
+                                @csrf
+                                <button type="submit"
+                                        class="inline-flex items-center rounded-xl border border-indigo-500 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50 transition">
+                                    Keluar
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('login') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                                Masuk
+                            </a>
+                            <a href="{{ route('register') }}"
+                               class="inline-flex items-center rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition">
+                                Daftar
+                            </a>
+                        @endauth
+
+                        <button id="navToggle"
+                                class="md:hidden inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white p-2 shadow-sm hover:bg-gray-50 transition">
+                            <svg class="w-6 h-6 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M3 12h18M3 18h18"/>
+                            </svg>
+                        </button>
                     </div>
-                </form>
-
-                <div class="ml-auto w-full flex items-center justify-end gap-2 sm:gap-3">
-                    @auth
-                        {{-- Tombol keranjang --}}
-                        <a href="{{ route('cart.index') }}"
-                           class="relative inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm hover:bg-gray-50 transition"
-                           aria-label="Keranjang">
-                            <svg class="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-2-8H3"/>
-                                <circle cx="9" cy="19" r="1.8"/>
-                                <circle cx="17" cy="19" r="1.8"/>
-                            </svg>
-                            @php
-                                $cartKey = auth()->check() ? 'cart_user_'.auth()->id() : 'cart_guest';
-                                $cartCount = collect(session($cartKey, session('cart', [])))->sum('qty');
-                            @endphp
-                            @if($cartCount > 0)
-                                <span class="pointer-events-none absolute top-0 right-0 translate-x-[75%] -translate-y-[75%] z-10 min-w-[20px] h-[20px] rounded-full bg-red-600 text-white text-[11px] font-bold ring-2 ring-white flex items-center justify-center px-1 leading-none">
-                                    {{ $cartCount }}
-                                </span>
-                            @endif
-                        </a>
-                    @else
-                        <a href="{{ route('login', ['msg' => 'login-required', 'redirect' => route('cart.index')]) }}"
-                           class="relative inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm hover:bg-gray-50 transition"
-                           aria-label="Keranjang">
-                            <svg class="w-5 h-5 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 3h2l.4 2M7 13h10l3-8H6.4M7 13l-2-8H3"/>
-                                <circle cx="9" cy="19" r="1.8"/>
-                                <circle cx="17" cy="19" r="1.8"/>
-                            </svg>
-                        </a>
-                    @endauth
-
-                    @auth
-                        <a href="{{ route('profile.edit') }}"
-                           class="hidden sm:inline-flex items-center rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-900 hover:bg-gray-50 transition">
-                            {{ auth()->user()->name ?? auth()->user()->email ?? 'Profil' }}
-                        </a>
-
-                        {{-- Profil: chip indigo muda --}}
-                        <a href="{{ route('profile.edit') }}"
-                           class="hidden sm:inline-flex items-center rounded-xl bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition">
-                            {{ auth()->user()->name ?? auth()->user()->email ?? 'Profil' }}
-                        </a>
-
-                        {{-- Keluar: tombol outline indigo --}}
-                        <form method="POST" action="{{ route('logout') }}" class="inline">
-                            @csrf
-                            <button type="submit"
-                                    class="inline-flex items-center rounded-xl border border-indigo-500 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50 transition">
-                                Keluar
-                            </button>
-                        </form>
-                    @else
-                        <a href="{{ route('login') }}"
-                           class="text-sm font-medium text-indigo-600 hover:text-indigo-800">
-                            Masuk
-                        </a>
-
-                        {{-- Daftar: tombol indigo solid --}}
-                        <a href="{{ route('register') }}"
-                           class="inline-flex items-center rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition">
-                            Daftar
-                        </a>
-                    @endauth
-
-                    <button id="navToggle"
-                            class="md:hidden inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white p-2 shadow-sm hover:bg-gray-50 transition">
-                        <svg class="w-6 h-6 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 6h18M3 12h18M3 18h18"/>
-                        </svg>
-                    </button>
                 </div>
             </div>
 
@@ -154,7 +157,7 @@
             <nav class="rounded-2xl bg-white/90 shadow-md">
                 <div class="px-4 sm:px-6 lg:px-8">
                     <div id="navBar"
-                         class="py-2 flex items-center justify-start md:justify-center gap-2 sm:gap-3 md:gap-4 overflow-x-auto">
+                         class="py-2 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 flex items-center justify-start gap-2 sm:gap-3 md:gap-4 overflow-x-auto">
                         @foreach($menu as $item)
                             @if($item['show'])
                                 @php
@@ -163,8 +166,12 @@
                                 @endphp
 
                                 <a href="{{ route($item['route']) }}"
-                                   class="shrink-0 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap transition
-                                          {{ $active ? 'bg-slate-900 text-white shadow-sm' : 'bg-white text-slate-700 hover:bg-slate-50' }}">
+                                    class="shrink-0 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium whitespace-nowrap transition
+                                        border border-transparent
+                                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white
+                                        {{ $active
+                                              ? 'bg-slate-900 text-white shadow-sm border-slate-900'
+                                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300' }}">
                                     <span class="w-4 h-4 text-current">
                                         @switch($icon)
                                             @case('grid')
