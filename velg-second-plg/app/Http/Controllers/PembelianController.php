@@ -187,12 +187,8 @@ class PembelianController extends Controller
         $total     = $data['total'] ?? ($jumlah * $harga);
         $oldStatus = $pembelian->status ?? 'dipesan';
 
-        // Hanya supplier yang boleh mengubah status
-        if ($user && $user->role === 'supplier' && isset($data['status'])) {
-            $newStatus = $data['status'];
-        } else {
-            $newStatus = $oldStatus;
-        }
+        // Admin boleh mengubah status; jika tidak diisi, pakai status lama
+        $newStatus = $data['status'] ?? $oldStatus;
 
         $pembelian->update([
             'tanggal'     => $data['tanggal'],

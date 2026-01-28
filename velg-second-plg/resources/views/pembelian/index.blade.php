@@ -4,6 +4,7 @@
 @php
     $role       = auth()->user()->role ?? null;
     $isSupplier = $role === 'supplier';
+    $canEdit    = in_array($role, ['supplier','admin']);
 @endphp
 
 <div class="mb-6 flex items-center justify-between">
@@ -35,7 +36,7 @@
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Total</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Status</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-600">Keterangan</th>
-                @if($isSupplier)
+                @if($canEdit)
                     <th class="px-4 py-3 text-right text-xs font-medium text-gray-600">Aksi</th>
                 @endif
             </tr>
@@ -81,7 +82,7 @@
 
                 <td class="px-4 py-3 text-sm">{{ $pb->keterangan ?? '—' }}</td>
 
-                @if($isSupplier)
+                @if($canEdit)
                     <td class="px-4 py-3 text-sm text-right">
                         <a href="{{ route('pembelian.edit', $pb) }}"
                            class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50">

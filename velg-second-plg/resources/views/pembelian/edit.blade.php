@@ -72,7 +72,7 @@
 
         @php
             $role = auth()->user()->role ?? null;
-            $isSupplier = $role === 'supplier';
+            $canEditStatus = in_array($role, ['supplier','admin']);
             $st = old('status', $pembelian->status ?? 'dipesan');
         @endphp
 
@@ -80,7 +80,7 @@
             <div>
                 <label class="block text-sm font-medium">Status</label>
 
-                @if($isSupplier)
+                @if($canEditStatus)
                     <select name="status" class="mt-1 w-full rounded border px-3 py-2">
                         <option value="dipesan"   @selected($st === 'dipesan')>Dipesan</option>
                         <option value="dikirim"   @selected($st === 'dikirim')>Dikirim</option>
